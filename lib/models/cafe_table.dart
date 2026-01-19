@@ -2,7 +2,7 @@ class CafeTable {
   final int id;
   final int tableNumber;
   final String status; // 'Empty', 'Occupied', 'Full'
-  final int chairCount;
+  final int currentChairCount;
   final int defaultChairCount;
   final int activeCount;
   final String? currentRule;
@@ -13,7 +13,7 @@ class CafeTable {
     required this.id,
     required this.tableNumber,
     required this.status,
-    required this.chairCount,
+    required this.currentChairCount,
     required this.defaultChairCount,
     required this.activeCount,
     this.currentRule,
@@ -26,7 +26,7 @@ class CafeTable {
       id: json['id'],
       tableNumber: json['table_number'],
       status: json['status'] ?? 'Empty',
-      chairCount: json['current_chair_count'] ?? 0,
+      currentChairCount: json['current_chair_count'] ?? 0,
       defaultChairCount: json['default_chair_count'],
       activeCount: json['active_count'] ?? 0,
       currentRule: json['current_rule'],
