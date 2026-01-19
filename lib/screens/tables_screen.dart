@@ -29,6 +29,7 @@ class _TablesScreenState extends State<TablesScreen> {
           }
 
           final tables = snapshot.data!;
+          tables.sort((a, b) => a.tableNumber.compareTo(b.tableNumber));
 
           if (tables.isEmpty) {
             return const Center(child: Text("Henüz masa eklenmemiş."));
@@ -76,7 +77,7 @@ class _TablesScreenState extends State<TablesScreen> {
                       Icon(Icons.table_restaurant, size: 40, color: AppColors.primary),
                       const SizedBox(height: 8),
                       Text(
-                        table.name,
+                        "Masa ${table.tableNumber}",
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

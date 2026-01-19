@@ -75,47 +75,71 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            // Dashboard Grid
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  // 1. Tables Card
-                  _DashboardCard(
-                    title: "Masalar",
-                    icon: Icons.table_bar,
-                    color: Colors.orange.shade100,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const TablesScreen()),
-                      );
-                    },
+      // STACK STRUCTURE: Kept for future image overlay
+      body: Stack(
+        children: [
+          // LAYER 1: Main Content
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    children: [
+                      _DashboardCard(
+                        title: "Masalar",
+                        icon: Icons.table_bar,
+                        color: Colors.orange.shade100,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const TablesScreen()),
+                          );
+                        },
+                      ),
+                      _DashboardCard(
+                        title: "Menü & Sipariş",
+                        icon: Icons.restaurant_menu,
+                        color: Colors.blue.shade100,
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Menü çok yakında...")),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-
-                  // 2. Menu Card (Placeholder)
-                  _DashboardCard(
-                    title: "Menü & Sipariş",
-                    icon: Icons.restaurant_menu,
-                    color: Colors.blue.shade100,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Menü çok yakında...")),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // LAYER 2: Placing custom arrow image here later
+          /* Positioned(
+            bottom: 85,
+            right: 30,
+            child: Image.asset('assets/arrow_nudge.png', width: 150),
+          ),
+          */
+        ],
+      ),
+
+      // LAYER 3: QR Button (FAB)
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Future: Navigate to QR Scanner
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Kamera açılıyor... 📷")),
+          );
+        },
+        backgroundColor: AppColors.primary,
+        elevation: 4,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.qr_code_scanner, color: AppColors.white, size: 30),
       ),
     );
   }

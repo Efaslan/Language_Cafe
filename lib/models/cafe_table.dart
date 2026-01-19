@@ -1,6 +1,6 @@
 class CafeTable {
   final int id;
-  final String name;
+  final int tableNumber;
   final String status; // 'Empty', 'Occupied', 'Full'
   final int chairCount;
   final int defaultChairCount;
@@ -11,7 +11,7 @@ class CafeTable {
 
   CafeTable({
     required this.id,
-    required this.name,
+    required this.tableNumber,
     required this.status,
     required this.chairCount,
     required this.defaultChairCount,
@@ -24,7 +24,7 @@ class CafeTable {
   factory CafeTable.fromJson(Map<String, dynamic> json) {
     return CafeTable(
       id: json['id'],
-      name: json['name'] ?? 'Masa',
+      tableNumber: json['table_number'],
       status: json['status'] ?? 'Empty',
       chairCount: json['current_chair_count'] ?? 0,
       defaultChairCount: json['default_chair_count'],
