@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,12 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Giriş Başarılı! Hoşgeldin ☕"),
-            backgroundColor: Colors.green,
-          ),
-        );
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen())
@@ -131,7 +126,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+
+              // Forgot Password Button
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                    );
+                  },
+                  child: const Text(
+                    "Şifremi Unuttum?",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
 
               // login button
               SizedBox(

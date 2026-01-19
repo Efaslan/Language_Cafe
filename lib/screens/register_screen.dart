@@ -163,7 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Size bir mail göndermemiz gerekiyor!';
                     }
-                    if (!value.contains('@')) {
+                    if (!value.contains('@') || !value.contains('.com')) {
                       return 'Doğru yazdığınıza emin misiniz?';
                     }
                     return null;

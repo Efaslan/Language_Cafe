@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/update_password_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,8 +36,29 @@ class MyApp extends StatelessWidget {
 }
 
 // checks if the user is logged in or not, and routes the screens accordingly
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  @override
+  void initState() {
+    super.initState();
+    // Auth olaylarını dinle
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final event = data.event;
+
+      // EĞER ŞİFRE SIFIRLAMA LİNKİYLE GELDİYSE
+      if (event == AuthChangeEvent.passwordRecovery) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const UpdatePasswordScreen()),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,14 +71,12 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-        // checking if they are logged in
         final session = snapshot.data?.session;
+        final currentSession = Supabase.instance.client.auth.currentSession;
 
-        if (session != null) {
-          // if logged in
+        if (session != null || currentSession != null) {
           return const HomeScreen();
         } else {
-          // if not logged in
           return const LoginScreen();
         }
       },
