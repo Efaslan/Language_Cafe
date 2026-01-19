@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/user_service.dart';
+import '../constants/app_colors.dart';
+import '../utils/validators.dart';
+import '../utils/error_handler.dart';
 import 'home_screen.dart';
 
 class UpdatePasswordScreen extends StatefulWidget {
@@ -10,55 +13,46 @@ class UpdatePasswordScreen extends StatefulWidget {
 }
 
 class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
+  final _userService = UserService();
+
   final _passwordController = TextEditingController();
-  final _supabase = Supabase.instance.client;
+  final _formKey = GlobalKey<FormState>();
+
   bool _isLoading = false;
 
   Future<void> _updatePassword() async {
-    final password = _passwordController.text;
-
-    // 1. Şifre Kontrolü
-    if (password.length < 6) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Şifre en az 6 karakter olmalıdır"), backgroundColor: Colors.redAccent),
-        );
-      }
+    if (!_formKey.currentState!.validate()) {
       return;
     }
-// TODO test this from mobile
+
     setState(() => _isLoading = true);
 
     try {
-      // 2. Şifreyi Güncelle
-      await _supabase.auth.updateUser(
-        UserAttributes(password: password),
+      await _userService.updateAccount(
+        password: _passwordController.text,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Şifreniz başarıyla güncellendi! Giriş yapılıyor... 🔒"),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
 
-        // 3. Ana Sayfaya At ve Geçmişi Sil
+        // return to homescreen and clean the history
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const HomeScreen()),
               (route) => false,
         );
       }
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Hata: ${e.message}"), backgroundColor: Colors.redAccent),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Beklenmedik bir hata oluştu."), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text(ErrorHandler.getMessage(e)),
+              backgroundColor: AppColors.error
+          ),
         );
       }
     } finally {
@@ -75,55 +69,60 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5DC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Yeni Şifre Belirle"),
-        backgroundColor: const Color(0xFFF5F5DC),
+        backgroundColor: AppColors.background,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.lock_open, size: 80, color: Colors.brown),
-            const SizedBox(height: 20),
-            const Text(
-              "Yeni Şifrenizi Girin",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.brown),
-            ),
-            const SizedBox(height: 30),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.lock_open, size: 80, color: AppColors.primary),
+              const SizedBox(height: 20),
+              const Text(
+                "Yeni Şifrenizi Girin",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
+              ),
+              const SizedBox(height: 30),
 
-            TextFormField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Yeni Şifre',
-                prefixIcon: const Icon(Icons.lock, color: Colors.brown),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.brown, width: 2),
+              // Password Field
+              TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                validator: (val) => Validators.validatePassword(val, message: "Yeni şifreniz en az 6 karakter olmalıdır"),
+                decoration: InputDecoration(
+                  labelText: 'Yeni Şifre',
+                  prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
+              const SizedBox(height: 30),
 
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _updatePassword,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _updatePassword,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: AppColors.white)
+                      : const Text("Şifreyi Güncelle", style: TextStyle(fontSize: 18)),
                 ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Şifreyi Güncelle", style: TextStyle(fontSize: 18)),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

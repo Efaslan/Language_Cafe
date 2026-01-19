@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/user_service.dart';
+import '../constants/app_colors.dart';
+import '../models/user_profile.dart';
 import 'tables_screen.dart';
 import 'profile_screen.dart';
 
@@ -11,8 +13,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _supabase = Supabase.instance.client;
-  String _userName = "Misafir"; // default name
+  final _userService = UserService();
+
+  String _userName = "Misafir";
 
   @override
   void initState() {
@@ -20,54 +23,40 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchUserName();
   }
 
-  // fetch user name from 'profiles' table
   Future<void> _fetchUserName() async {
     try {
-      final userId = _supabase.auth.currentUser!.id;
-      final data = await _supabase
-          .from('profiles')
-          .select('first_name')
-          .eq('id', userId)
-          .single();
+      final user = _userService.currentUser;
+      if (user != null) {
+        UserProfile profile = await _userService.fetchUserProfile(user.id);
 
-      if (mounted) {
-        setState(() {
-          _userName = data['first_name'] ?? "Misafir";
-        });
+        if (mounted) {
+          setState(() {
+            _userName = profile.firstName.isNotEmpty ? profile.firstName : "Misafir";
+          });
+        }
       }
     } catch (e) {
-      // silent error or debug print
-      print("Error fetching name: $e");
+      debugPrint("Error fetching name: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5DC),
-      // CUSTOM APP BAR
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5DC),
+        backgroundColor: AppColors.background,
         elevation: 0,
-        // Left Side: Welcome Text
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Hoş geldin,",
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            Text(
-              _userName,
-              style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.brown
-              ),
-            ),
-          ],
+        // top left welcome msg
+        title: Text(
+          "Hoş geldin, $_userName",
+          style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary
+          ),
         ),
-        // Right Side: Default User Icon (Goes to Profile)
+        // top right profile icon
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -79,8 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
               child: const CircleAvatar(
-                backgroundColor: Colors.brown,
-                child: Icon(Icons.person, color: Colors.white),
+                backgroundColor: AppColors.primary,
+                child: Icon(Icons.person, color: AppColors.white),
               ),
             ),
           )
@@ -158,11 +147,11 @@ class _DashboardCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 50, color: Colors.brown),
+            Icon(icon, size: 50, color: AppColors.primary),
             const SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
               textAlign: TextAlign.center,
             ),
           ],

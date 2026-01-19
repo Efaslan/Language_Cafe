@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'login_screen.dart';
 import 'account_settings_screen.dart';
+import '../services/user_service.dart';
+import '../services/auth_service.dart';
+import '../constants/app_colors.dart';
+import '../utils/error_handler.dart';
+import '../models/user_profile.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,17 +17,16 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final _supabase = Supabase.instance.client;
+  final _userService = UserService();
+  final _authService = AuthService();
 
-  // Controllers
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _bioController = TextEditingController();
 
-  // State Variables
   bool _isLoading = false;
   bool _isPublic = true;
-  bool _isDarkMode = false; // Demo for UI switch
+  bool _isDarkMode = false;
   List<String> _learningLanguages = [];
   File? _avatarFile;
 
@@ -33,62 +36,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserProfile();
   }
 
-  // Fetch user data from DB
   Future<void> _loadUserProfile() async {
     setState(() => _isLoading = true);
     try {
-      final user = _supabase.auth.currentUser;
+      final user = _userService.currentUser;
       if (user != null) {
-        final data = await _supabase
-            .from('profiles')
-            .select()
-            .eq('id', user.id)
-            .single();
+        UserProfile profile = await _userService.fetchUserProfile(user.id);
 
-        _firstNameController.text = data['first_name'] ?? '';
-        _lastNameController.text = data['last_name'] ?? '';
-        _bioController.text = data['bio'] ?? '';
-
-        if (data['learning_languages'] != null) {
-          _learningLanguages = List<String>.from(data['learning_languages']);
-        }
-
-        _isPublic = data['is_public'] ?? true;
+        _firstNameController.text = profile.firstName;
+        _lastNameController.text = profile.lastName;
+        _bioController.text = profile.bio;
+        _learningLanguages = List.from(profile.learningLanguages); // Kopyasını al
+        _isPublic = profile.isPublic;
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Hata: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(ErrorHandler.getMessage(e)), backgroundColor: AppColors.error)
+        );
       }
     } finally {
       if(mounted) setState(() => _isLoading = false);
     }
   }
 
-  // Update profile logic
   Future<void> _updateProfile() async {
     setState(() => _isLoading = true);
     try {
-      final user = _supabase.auth.currentUser;
+      final user = _userService.currentUser;
       if (user == null) return;
 
-      // Update Profile Table
-      await _supabase.from('profiles').update({
-        'first_name': _firstNameController.text.trim(),
-        'last_name': _lastNameController.text.trim(),
-        'bio': _bioController.text.trim(),
-        'learning_languages': _learningLanguages,
-        'is_public': _isPublic,
-      }).eq('id', user.id);
+      await _userService.updateProfile(
+        userId: user.id,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        bio: _bioController.text.trim(),
+        languages: _learningLanguages,
+        isPublic: _isPublic,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profil güncellendi! ✅"), backgroundColor: Colors.green),
+          const SnackBar(content: Text("Profil güncellendi! ✅"), backgroundColor: AppColors.success),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Güncelleme hatası: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text(ErrorHandler.getMessage(e)), backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -96,7 +91,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Add Language Dialog
   void _showAddLanguageDialog() {
     final languageController = TextEditingController();
     showDialog(
@@ -122,7 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.pop(context);
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.brown, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.white),
             child: const Text("Ekle"),
           ),
         ],
@@ -130,7 +124,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Pick image from gallery
   Future<void> _pickAvatar() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -147,9 +140,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Sign out logic
   Future<void> _signOut() async {
-    await _supabase.auth.signOut();
+    await _authService.signOut();
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -158,7 +150,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  // Confirm Sign Out Dialog
   void _confirmSignOut() {
     showDialog(
       context: context,
@@ -167,37 +158,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: const Text("Hesabınızdan çıkış yapmak istediğinize emin misiniz?"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), // Close dialog
+            onPressed: () => Navigator.pop(context),
             child: const Text("İptal", style: TextStyle(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close settings sheet
-              _signOut(); // Perform sign out
+              Navigator.pop(context);
+              Navigator.pop(context);
+              _signOut();
             },
-            child: const Text("Çıkış Yap", style: TextStyle(color: Colors.redAccent)),
+            child: const Text("Çıkış Yap", style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
     );
   }
 
-  // Bottom Sheet for Settings
   void _showSettingsSheet() {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Allow sheet to be taller if needed
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        // StatefulBuilder allows updating state inside the bottom sheet (e.g. switches)
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter setSheetState) {
               return Container(
                 padding: const EdgeInsets.all(24),
-                // Dynamic height constraint
                 constraints: BoxConstraints(
                   maxHeight: MediaQuery.of(context).size.height * 0.85,
                 ),
@@ -206,13 +194,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text("Ayarlar", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.brown)),
+                      const Text("Ayarlar", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
                       const SizedBox(height: 20),
 
-                      // --- Account Settings ---
                       ListTile(
-                        leading: const Icon(Icons.manage_accounts, color: Colors.brown),
-                        title: const Text("Hesap Ayarları", style: TextStyle(color: Colors.brown)),
+                        leading: const Icon(Icons.manage_accounts, color: AppColors.primary),
+                        title: const Text("Hesap Ayarları", style: TextStyle(color: AppColors.primary)),
                         subtitle: const Text("Email, Şifre, Üyelik Tarihi"),
                         onTap: () {
                           Navigator.pop(context);
@@ -224,28 +211,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const Divider(),
 
-                      // --- App Settings (Moved Here) ---
                       const SizedBox(height: 10),
                       const Text("Uygulama Ayarları (Yakında)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey)),
                       const SizedBox(height: 5),
 
                       SwitchListTile(
                         title: const Text("Gece Görünümü"),
-                        secondary: const Icon(Icons.dark_mode, color: Colors.brown),
+                        secondary: const Icon(Icons.dark_mode, color: AppColors.primary),
                         value: _isDarkMode,
-                        activeTrackColor: Colors.brown,
+                        activeTrackColor: AppColors.primary,
                         onChanged: (bool value) {
-                          setSheetState(() { // Update sheet state
-                            _isDarkMode = value;
-                          });
-                          setState(() { // Update parent state if needed
-                            _isDarkMode = value;
-                          });
+                          setSheetState(() => _isDarkMode = value);
+                          setState(() => _isDarkMode = value);
                         },
                       ),
 
                       ListTile(
-                        leading: const Icon(Icons.language, color: Colors.brown),
+                        leading: const Icon(Icons.language, color: AppColors.primary),
                         title: const Text("Uygulama Dili"),
                         subtitle: const Text("Türkçe"),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
@@ -253,22 +235,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       SwitchListTile(
                         title: const Text("Bildirimler"),
-                        secondary: const Icon(Icons.notifications, color: Colors.brown),
+                        secondary: const Icon(Icons.notifications, color: AppColors.primary),
                         value: true,
-                        activeTrackColor: Colors.brown,
-                        onChanged: (val) {
-                          // Notification logic
-                        },
+                        activeTrackColor: AppColors.primary,
+                        onChanged: (val) {},
                       ),
 
                       const Divider(),
 
-                      // --- Logout Option ---
                       ListTile(
-                        leading: const Icon(Icons.logout, color: Colors.redAccent),
-                        title: const Text("Çıkış Yap", style: TextStyle(color: Colors.redAccent)),
+                        leading: const Icon(Icons.logout, color: AppColors.error),
+                        title: const Text("Çıkış Yap", style: TextStyle(color: AppColors.error)),
                         onTap: () {
-                          // Don't close sheet yet, show confirmation first
                           _confirmSignOut();
                         },
                       ),
@@ -294,15 +272,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5DC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Profil Düzenle"),
-        backgroundColor: const Color(0xFFF5F5DC),
+        backgroundColor: AppColors.background,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showSettingsSheet,
-        backgroundColor: Colors.brown,
-        child: const Icon(Icons.settings, color: Colors.white),
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.settings, color: AppColors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -311,7 +289,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar Section
+            // Avatar
             Center(
               child: GestureDetector(
                 onTap: _pickAvatar,
@@ -324,7 +302,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ? FileImage(_avatarFile!)
                           : null,
                       child: _avatarFile == null
-                          ? const Icon(Icons.person, size: 70, color: Colors.white)
+                          ? const Icon(Icons.person, size: 70, color: AppColors.white)
                           : null,
                     ),
                     const Positioned(
@@ -332,8 +310,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       right: 0,
                       child: CircleAvatar(
                         radius: 18,
-                        backgroundColor: Colors.brown,
-                        child: Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                        backgroundColor: AppColors.primary,
+                        child: Icon(Icons.camera_alt, size: 18, color: AppColors.white),
                       ),
                     )
                   ],
@@ -342,8 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 30),
 
-            // --- PERSONAL INFO ---
-            const Text("Kişisel Bilgiler", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown)),
+            const Text("Kişisel Bilgiler", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const SizedBox(height: 10),
 
             Row(
@@ -365,34 +342,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Bio Field
             TextFormField(
               controller: _bioController,
               maxLines: 3,
               decoration: const InputDecoration(
                 labelText: 'Hakkımda',
-                prefixIcon: Icon(Icons.description),
+                prefixIcon: Icon(Icons.description, color: AppColors.primary),
                 alignLabelWithHint: true,
                 border: OutlineInputBorder(),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
               ),
             ),
             const SizedBox(height: 24),
 
-            // --- LANGUAGES ---
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Öğrenilen Diller", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown)),
+                const Text("Öğrenilen Diller", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 IconButton(
                   onPressed: _showAddLanguageDialog,
-                  icon: const Icon(Icons.add_circle, color: Colors.brown),
+                  icon: const Icon(Icons.add_circle, color: AppColors.primary),
                   tooltip: "Dil Ekle",
                 ),
               ],
             ),
             const SizedBox(height: 8),
 
-            // Language List (Wrap Widget)
             Wrap(
               spacing: 8.0,
               runSpacing: 4.0,
@@ -417,8 +394,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 24),
 
-            // --- PRIVACY SETTINGS ---
-            const Text("Gizlilik Ayarları", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown)),
+            const Text("Gizlilik Ayarları", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const SizedBox(height: 10),
 
             SwitchListTile(
@@ -431,7 +407,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               subtitle: const Text("Kapalıyken diğer kullanıcılar profilinizi göremez."),
               value: _isPublic,
-              activeTrackColor: Colors.brown,
+              activeTrackColor: AppColors.primary,
               onChanged: (bool value) {
                 setState(() {
                   _isPublic = value;
@@ -441,20 +417,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 40),
 
-            // SAVE BUTTON
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: _updateProfile,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
                 ),
                 child: const Text("Değişiklikleri Kaydet", style: TextStyle(fontSize: 16)),
               ),
             ),
-            const SizedBox(height: 80), // Space for FAB
+            const SizedBox(height: 80),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'login_screen.dart';
+import '../services/table_service.dart';
+import '../models/cafe_table.dart';
+import '../constants/app_colors.dart';
 
 class TablesScreen extends StatefulWidget {
   const TablesScreen({super.key});
@@ -10,35 +11,18 @@ class TablesScreen extends StatefulWidget {
 }
 
 class _TablesScreenState extends State<TablesScreen> {
-  final _supabase = Supabase.instance.client;
-
-  // sign out
-  Future<void> _signOut() async {
-    await _supabase.auth.signOut();
-    if (mounted) {
-      // back to login
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (route) => false,
-      );
-    }
-  }
+  final _tableService = TableService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5DC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("Masalar"),
-        backgroundColor: const Color(0xFFF5F5DC),
+        title: const Text("Canlı Masalar"),
+        backgroundColor: AppColors.background,
       ),
-      // table list (live stream)
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-        // listen 'cafe_tables' from Supabase and order by id
-        stream: _supabase
-            .from('cafe_tables')
-            .stream(primaryKey: ['id'])
-            .order('id', ascending: true),
+      body: StreamBuilder<List<CafeTable>>(
+        stream: _tableService.getTablesStream(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -50,11 +34,11 @@ class _TablesScreenState extends State<TablesScreen> {
             return const Center(child: Text("Henüz masa eklenmemiş."));
           }
 
-          // grid of tables
+          // draw tables
           return GridView.builder(
             padding: const EdgeInsets.all(16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // 2 tables next to each other
+              crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
               childAspectRatio: 1.2,
@@ -62,19 +46,15 @@ class _TablesScreenState extends State<TablesScreen> {
             itemCount: tables.length,
             itemBuilder: (context, index) {
               final table = tables[index];
-              final status = table['status']; // 'Empty', 'Occupied', 'Full'
-              final tableName = table['name'];
-              final chairCount = table['current_chair_count'];
-              final activeCount = table['active_count'];
 
-              // colors for table status
+              // empty = green, full = red, occupied = orange
               Color cardColor;
-              if (status == 'Empty') {
-                cardColor = Colors.green.shade100; // empty (green)
-              } else if (status == 'Full') {
-                cardColor = Colors.red.shade100; // full (red)
+              if (table.status == 'Empty') {
+                cardColor = Colors.green.shade100;
+              } else if (table.status == 'Full') {
+                cardColor = Colors.red.shade100;
               } else {
-                cardColor = Colors.orange.shade100; // occupied, not full (orange)
+                cardColor = Colors.orange.shade100;
               }
 
               return Card(
@@ -83,7 +63,6 @@ class _TablesScreenState extends State<TablesScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 child: InkWell(
                   onTap: () {
-                    // read QR detail here, in the future
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text("Lütfen masadaki QR kodunu okutunuz 📷"),
@@ -94,20 +73,24 @@ class _TablesScreenState extends State<TablesScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.table_restaurant, size: 40, color: Colors.brown.shade700),
+                      Icon(Icons.table_restaurant, size: 40, color: AppColors.primary),
                       const SizedBox(height: 8),
                       Text(
-                        tableName,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        table.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.black87
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "$activeCount / $chairCount", // occupancy: 2/4
-                        style: TextStyle(color: Colors.brown.shade600),
+                        "${table.activeCount} / ${table.chairCount}",
+                        style: const TextStyle(color: AppColors.primary),
                       ),
                       const SizedBox(height: 4),
                       // show if there is a rule
-                      if (table['current_rule'] != null)
+                      if (table.currentRule != null)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
@@ -115,7 +98,7 @@ class _TablesScreenState extends State<TablesScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            table['current_rule'],
+                            table.currentRule!,
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -127,14 +110,14 @@ class _TablesScreenState extends State<TablesScreen> {
           );
         },
       ),
-      // QR reading button
+      // QR Button
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // QR scanner here
+          // todo qr scanner route
         },
-        backgroundColor: Colors.brown,
-        icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
-        label: const Text("Masa Seç", style: TextStyle(color: Colors.white)),
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.qr_code_scanner, color: AppColors.white),
+        label: const Text("QR Okut", style: TextStyle(color: AppColors.white)),
       ),
     );
   }

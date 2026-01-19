@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:language_cafe/constants/app_colors.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:async';
+import '../services/user_service.dart';
+import '../utils/validators.dart';
+import '../utils/error_handler.dart';
+import '../constants/app_colors.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -10,13 +15,15 @@ class AccountSettingsScreen extends StatefulWidget {
 }
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
-  final _supabase = Supabase.instance.client;
+  final _userService = UserService();
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
   String _createdAt = '';
 
+  // Auth state listener
   late final StreamSubscription<AuthState> _authSubscription;
 
   @override
@@ -24,7 +31,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     super.initState();
     _loadAccountData();
 
-    _authSubscription = _supabase.auth.onAuthStateChange.listen((data) {
+    // listening to auth through global instance
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       if (event == AuthChangeEvent.userUpdated || event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed) {
         _loadAccountData();
@@ -33,14 +41,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
 
   Future<void> _loadAccountData() async {
-    // 1. DEĞİŞİKLİK: Sadece refreshSession yetmez, doğrudan sunucudan kullanıcıyı çekiyoruz.
     try {
-      // Bu komut hafızadaki (cache) kullanıcıyı değil, sunucudaki en güncel kullanıcıyı getirir.
-      final response = await _supabase.auth.getUser();
+      // refresh user data to display correct email after change
+      final response = await _userService.refreshUser();
       final user = response.user;
 
       if (user != null) {
-        // İmleç atlamasın diye sadece değişiklik varsa güncelle
         if (_emailController.text != user.email) {
           _emailController.text = user.email ?? '';
         }
@@ -61,8 +67,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         if (mounted) setState(() {});
       }
     } catch (e) {
-      // Hata olursa (örn: internet yoksa) eski yöntemle hafızadan dene
-      final user = _supabase.auth.currentUser;
+      // display last email from cache if the server does not respond
+      final user = _userService.currentUser;
       if (user != null && _emailController.text.isEmpty) {
         _emailController.text = user.email ?? '';
         if (mounted) setState(() {});
@@ -73,52 +79,43 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   Future<void> _updateAccount() async {
     setState(() => _isLoading = true);
     try {
-      final user = _supabase.auth.currentUser;
+      final user = _userService.currentUser;
       if (user == null) return;
 
       final newEmail = _emailController.text.trim();
       final newPassword = _passwordController.text;
 
-      // 1. Şifre Uzunluk Kontrolü (Manuel Validasyon)
-      if (newPassword.isNotEmpty && newPassword.length < 6) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Yeni şifre en az 6 karakter olmalıdır"),
-              backgroundColor: Colors.red,
-            ),
-          );
+      if (newPassword.isNotEmpty) {
+        final error = Validators.validatePassword(newPassword);
+        if (error != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error), backgroundColor: AppColors.error),
+            );
+          }
+          return;
         }
-        return; // İşlemi durdur
       }
 
-      // Değişiklik var mı kontrol et
       final emailChanged = newEmail != user.email;
       final passwordChanged = newPassword.isNotEmpty;
 
-      final attributes = UserAttributes(
-        email: newEmail,
-        password: passwordChanged ? newPassword : null,
-      );
-
       if (emailChanged || passwordChanged) {
-        await _supabase.auth.updateUser(
-          attributes,
-          // E-posta değişikliğinden sonra uygulamaya dönüş için
-          emailRedirectTo: 'com.emiraslan.language_cafe://login-callback',
+        await _userService.updateAccount(
+          email: newEmail,
+          password: passwordChanged ? newPassword : null,
         );
 
         if (mounted) {
-          // Duruma göre özel mesaj belirle
           String message = "Bilgiler güncellendi.";
-          Color color = Colors.green;
+          Color color = AppColors.success;
 
           if (emailChanged && passwordChanged) {
             message = "Şifre güncellendi! E-posta değişikliği için lütfen kutunuza gelen linke tıklayın. 📧";
-            color = Colors.orange;
+            color = AppColors.pending;
           } else if (emailChanged) {
             message = "E-posta değişikliği isteği alındı! Lütfen yeni adresinize gelen linke tıklayın. 📧";
-            color = Colors.orange;
+            color = AppColors.pending;
           } else if (passwordChanged) {
             message = "Şifreniz başarıyla güncellendi! 🔒";
           }
@@ -127,7 +124,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             SnackBar(
               content: Text(message),
               backgroundColor: color,
-              duration: const Duration(seconds: 4),
+              duration: const Duration(seconds: 6),
             ),
           );
           _passwordController.clear();
@@ -139,25 +136,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           );
         }
       }
-    } on AuthException catch (e) {
-      // Supabase'den dönen spesifik hataları yakalayıp Türkçeleştiriyoruz
-      String errorMessage = "Güncelleme başarısız: ${e.message}";
-
-      if (e.message.contains("different from the old password")) {
-        errorMessage = "Yeni şifreniz eskisiyle aynı olamaz.";
-      } else if (e.message.contains("Password should be")) {
-        errorMessage = "Şifre güvenli değil veya çok kısa.";
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
-        );
-      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Beklenmedik bir hata: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(ErrorHandler.getMessage(e)),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -176,10 +161,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5DC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Hesap Ayarları"),
-        backgroundColor: const Color(0xFFF5F5DC),
+        backgroundColor: AppColors.background,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

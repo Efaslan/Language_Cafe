@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/auth_service.dart';
+import '../constants/app_colors.dart';
+import '../utils/validators.dart';
+import '../utils/error_handler.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -9,8 +12,9 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // Key for form validation
   final _formKey = GlobalKey<FormState>();
+
+  final _authService = AuthService();
 
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -18,63 +22,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
-  final _supabase = Supabase.instance.client;
 
   Future<void> _signUp() async {
-    // 1. Validate form inputs before sending request
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      // 2. Send data to Supabase (Names are separated)
-      final AuthResponse res = await _supabase.auth.signUp(
+      await _authService.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
-        emailRedirectTo: 'com.emiraslan.language_cafe://login-callback',
-        data: {
-          'first_name': _firstNameController.text.trim(), // Required
-          'last_name': _lastNameController.text.trim(),   // Optional
-        },
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Kayıt Başarılı! Lütfen email adresinizi doğrulayın. 📧"),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 10),
-          ),
-        );
-      }
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.message),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 6),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Beklenmedik bir hata oluştu."),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: Text(ErrorHandler.getMessage(e)),
+            backgroundColor: AppColors.error,
           ),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -90,48 +73,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5DC),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Kayıt Ol"),
-        backgroundColor: const Color(0xFFF5F5DC),
+        backgroundColor: AppColors.background,
       ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          // Wrap with Form for validation
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.person_add, size: 80, color: Colors.brown),
+                const Icon(Icons.person_add, size: 80, color: AppColors.primary),
                 const SizedBox(height: 20),
                 const Text(
                   'Aramıza Katıl',
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.brown),
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
                 ),
                 const SizedBox(height: 30),
 
-                // Name Fields Row
+                // name fields
                 Row(
                   children: [
                     Expanded(
                       child: TextFormField(
                         controller: _firstNameController,
                         keyboardType: TextInputType.name,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Size nasıl hitap edelim?'; // required message
-                          }
-                          return null;
-                        },
+                        validator: (val) => Validators.validateName(val, message: 'Size nasıl hitap edelim?'),
                         decoration: InputDecoration(
                           labelText: 'Ad*',
-                          prefixIcon: const Icon(Icons.person, color: Colors.brown),
+                          prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.brown, width: 2)),
+                              borderSide: const BorderSide(color: AppColors.primary, width: 2)),
                         ),
                       ),
                     ),
@@ -140,13 +117,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: TextFormField(
                         controller: _lastNameController,
                         keyboardType: TextInputType.name,
+                        // no validator, last name is optional
                         decoration: InputDecoration(
-                          labelText: 'Soyad', // optional
-                          prefixIcon: const Icon(Icons.person_outline, color: Colors.brown),
+                          labelText: 'Soyad',
+                          prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.brown, width: 2)),
+                              borderSide: const BorderSide(color: AppColors.primary, width: 2)),
                         ),
                       ),
                     ),
@@ -159,81 +137,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Size bir mail göndermemiz gerekiyor!';
-                    }
-                    if (!value.contains('@') || !value.contains('.com')) {
-                      return 'Doğru yazdığınıza emin misiniz?';
-                    }
-                    return null;
-                  },
+                  validator: (val) => Validators.validateEmail(val, message: 'Size bir mail göndermemiz gerekiyor!'),
                   decoration: InputDecoration(
                     labelText: 'Email*',
-                    prefixIcon: const Icon(Icons.email_outlined, color: Colors.brown),
+                    prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.brown, width: 2),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 16),
 
-                // Password Field
+                // Password field
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Lütfen unutmayın!';
-                    }
-                    if (value.length < 6) {
-                      return 'Şifreniz en az 6 karakter olmalı';
-                    }
-                    return null;
-                  },
+                  validator: (val) => Validators.validatePassword(val, message: 'Lütfen unutmayın! (En az 6 karakter)'),
                   decoration: InputDecoration(
                     labelText: 'Şifre*',
-                    prefixIcon: const Icon(Icons.lock_outline, color: Colors.brown),
+                    prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.brown, width: 2),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 2),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 24),
 
-                // Sign Up Button
+                // Register button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _signUp,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.brown,
-                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const CircularProgressIndicator(color: AppColors.white)
                         : const Text('Kayıt Ol', style: TextStyle(fontSize: 18)),
                   ),
                 ),
 
                 const SizedBox(height: 16),
 
-                // Back to Login Link
+                // Login page link
                 TextButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
                     child: const Text(
                       "Zaten hesabın var mı? Giriş Yap",
-                      style: TextStyle(color: Colors.brown),
+                      style: TextStyle(color: AppColors.primary),
                     )
                 ),
               ],
