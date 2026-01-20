@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 import '../constants/app_colors.dart';
-import '../models/user_profile.dart';
 import 'tables_screen.dart';
 import 'profile_screen.dart';
+import 'menu_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,29 +14,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _userService = UserService();
-
   String _userName = "Misafir";
 
   @override
   void initState() {
     super.initState();
-    _fetchUserName();
+    // İlk açılışta CACHE'den oku (Anında gelir)
+    _loadNameFromCache();
   }
 
-  Future<void> _fetchUserName() async {
-    try {
-      final user = _userService.currentUser;
-      if (user != null) {
-        UserProfile profile = await _userService.fetchUserProfile(user.id);
-
-        if (mounted) {
-          setState(() {
-            _userName = profile.firstName.isNotEmpty ? profile.firstName : "Misafir";
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching name: $e");
+  // Veritabanına gitmeden, direkt eldeki veriden ismi alır
+  void _loadNameFromCache() {
+    final name = _userService.cachedFirstName;
+    if (name != null && mounted) {
+      setState(() {
+        _userName = name;
+      });
     }
   }
 
@@ -47,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        // top left welcome msg
+        // Sol üst: Karşılama mesajı
         title: Text(
           "Hoş geldin, $_userName",
           style: const TextStyle(
@@ -56,16 +49,17 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.primary
           ),
         ),
-        // top right profile icon
+        // Sağ üst: Profil ikonu
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: InkWell(
               onTap: () {
+                // Profil sayfasına git ve dönünce ismi güncelle
                 Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const ProfileScreen())
-                );
+                ).then((_) => _loadNameFromCache());
               },
               child: const CircleAvatar(
                 backgroundColor: AppColors.primary,
@@ -75,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         ],
       ),
-      // STACK STRUCTURE: Kept for future image overlay
+      // STACK STRUCTURE: Future image overlay için yer tutucu
       body: Stack(
         children: [
           // LAYER 1: Main Content
@@ -90,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                     children: [
+                      // Masalar Kartı
                       _DashboardCard(
                         title: "Masalar",
                         icon: Icons.table_bar,
@@ -101,13 +96,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                       ),
+                      // Menü & Sipariş Kartı (GÜNCELLENDİ)
                       _DashboardCard(
                         title: "Menü & Sipariş",
                         icon: Icons.restaurant_menu,
                         color: Colors.blue.shade100,
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Menü çok yakında...")),
+                          // Menü ekranına yönlendirme
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MenuScreen()),
                           );
                         },
                       ),

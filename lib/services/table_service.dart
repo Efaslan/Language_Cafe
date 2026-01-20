@@ -20,7 +20,7 @@ class TableService {
     await _supabase.from('table_participants').insert({
       'table_id': table.id,
       'user_id': userId,
-      // joined_at otomatik now() olur
+      // created_at otomatik now() olur
       // left_at null olur (aktif)
     });
   }
@@ -32,5 +32,34 @@ class TableService {
         .update({'left_at': DateTime.now().toIso8601String()})
         .eq('user_id', userId)
         .isFilter('left_at', null); // Sadece aktif olanı kapat
+  }
+
+  Future<CafeTable?> getCurrentActiveTable() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return null;
+
+    try {
+      // 1. Find active participation
+      final participation = await _supabase
+          .from('table_participants')
+          .select('table_id')
+          .eq('user_id', userId)
+          .isFilter('left_at', null) // Only active sessions
+          .maybeSingle();
+
+      if (participation == null) return null;
+
+      // 2. Fetch table details
+      final tableData = await _supabase
+          .from('cafe_tables')
+          .select()
+          .eq('id', participation['table_id'])
+          .single();
+
+      return CafeTable.fromJson(tableData);
+    } catch (e) {
+      // Log error silently
+      return null;
+    }
   }
 }

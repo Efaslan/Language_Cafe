@@ -10,6 +10,11 @@ class UserService {
     return await _supabase.auth.getUser();
   }
 
+  String? get cachedFirstName {
+    final metadata = _supabase.auth.currentUser?.userMetadata;
+    return metadata?['first_name'];
+  }
+
   Future<UserProfile> fetchUserProfile(String userId) async {
     final data = await _supabase
         .from('profiles')
@@ -28,6 +33,7 @@ class UserService {
     required List<String> languages,
     required bool isPublic,
   }) async {
+    // 1. Veritabanını Güncelle (Kalıcı Depo)
     await _supabase.from('profiles').update({
       'first_name': firstName,
       'last_name': lastName,
@@ -35,6 +41,18 @@ class UserService {
       'learning_languages': languages,
       'is_public': isPublic,
     }).eq('id', userId);
+
+    // 2. Metadata'yı (Cache) Güncelle (Hızlı Erişim İçin)
+    // Böylece Home ekranı veritabanına sormadan güncel ismi bilir.
+    await _supabase.auth.updateUser(
+        UserAttributes(
+            data: {
+              'first_name': firstName,
+              'last_name': lastName,
+              // İhtiyaç olursa diğerlerini de ekleyebilirsin
+            }
+        )
+    );
   }
 
   Future<UserResponse> updateAccount({String? email, String? password}) async {
