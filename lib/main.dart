@@ -5,6 +5,9 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/update_password_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'widgets/floating_cart_button.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,13 +33,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Language Cafe',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
         useMaterial3: true,
       ),
-      home: const AuthGate(), // router
+
+      // global cart button
+      builder: (context, child) {
+        return Stack(
+          children: [
+            if (child != null) child,
+            // sepet boşsa zaten gizli olduğu için sorun olmaz.
+            // Yine de kullanıcı oturum açmamışsa göstermemek mantıklı olabilir.
+            const FloatingCartButton(),
+          ],
+        );
+      },
+      home: const AuthGate(),
     );
   }
 }

@@ -5,6 +5,7 @@ import '../providers/user_provider.dart';
 import 'tables_screen.dart';
 import 'profile_screen.dart';
 import 'menu_screen.dart';
+import '../services/user_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -14,6 +15,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  // to access cache
+  final _userService = UserService();
+
   @override
   Widget build(BuildContext context) {
     // If the data is loading, error, or available, 'userProfileAsync' handles it.
@@ -24,9 +28,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Eğer veri geldiyse (AsyncData) değerini al, yoksa null dön.
     final profile = userProfileAsync.asData?.value;
 
-    final displayName = (profile?.firstName.isNotEmpty == true)
-        ? profile!.firstName
-        : "Misafir";
+    final String displayName =
+        userProfileAsync.asData?.value.firstName ?? // 1. Taze Veri
+            _userService.cachedFirstName ??             // 2. Cache (Anında)
+            "";
 
     return Scaffold(
       backgroundColor: AppColors.background,
