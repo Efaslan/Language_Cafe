@@ -11,11 +11,12 @@ class MenuScreen extends ConsumerStatefulWidget {
 }
 
 class _MenuScreenState extends ConsumerState<MenuScreen> {
-  // Sadece ürün ekleme/çıkarma işlemleri kaldı, sipariş verme Global Butona taşındı.
+  // Seçili kategoriyi tutan değişken (Varsayılan: Hepsi)
+  String _selectedCategory = 'Hepsi';
 
   @override
   Widget build(BuildContext context) {
-    // 1. Verileri Riverpod'dan İzle
+    // Verileri Riverpod'dan izle
     final productsAsync = ref.watch(productsProvider);
     final cart = ref.watch(cartProvider);
 
@@ -24,90 +25,150 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       appBar: AppBar(
         title: const Text("Menü"),
         backgroundColor: AppColors.background,
+        centerTitle: true, // Başlığı ortalar
       ),
       body: productsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text("Hata: $err")),
-        data: (products) {
-          // Stack kaldırıldı, sadece Liste var.
-          return ListView.builder(
-            // Sepet butonu üstte kalacağı için listenin altına boşluk bırakıyoruz
-            padding: const EdgeInsets.only(bottom: 100),
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              final product = products[index];
-              final quantity = cart[product] ?? 0;
+        data: (allProducts) {
 
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    children: [
-                      // Image
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.brown.shade50,
-                          borderRadius: BorderRadius.circular(8),
+          // --- KATEGORİ MANTIĞI ---
+          // 1. Veritabanındaki ürünlerden benzersiz kategorileri çıkar
+          final categories = ['Hepsi', ...allProducts.map((e) => e.category).toSet().toList()];
+
+          // 2. Seçili kategoriye göre ürünleri filtrele
+          final displayedProducts = _selectedCategory == 'Hepsi'
+              ? allProducts
+              : allProducts.where((p) => p.category == _selectedCategory).toList();
+
+          return Column(
+            children: [
+              // --- KATEGORİ LİSTESİ (Yatay) ---
+              SizedBox(
+                height: 60, // Kategori çubuğunun yüksekliği
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal, // Yan yana kaydırma
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    final isSelected = category == _selectedCategory;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 10), // Kartlar arası boşluk
+                      child: ChoiceChip(
+                        label: Text(
+                          category,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        child: product.imageUrl != null
-                            ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(product.imageUrl!, fit: BoxFit.cover),
-                        )
-                            : const Icon(Icons.fastfood, color: Colors.brown),
-                      ),
-                      const SizedBox(width: 16),
-
-                      // Info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              product.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            Text(
-                              "${product.price} ₺",
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
+                        selected: isSelected,
+                        selectedColor: AppColors.primary, // Seçili renk
+                        backgroundColor: Colors.white,    // Seçili olmayan renk
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20), // Kenar yuvarlaklığı
+                          side: const BorderSide(color: AppColors.primary), // Çerçeve rengi
                         ),
+                        onSelected: (bool selected) {
+                          if (selected) {
+                            // Tıklanınca kategoriyi güncelle ve ekranı yenile
+                            setState(() {
+                              _selectedCategory = category;
+                            });
+                          }
+                        },
                       ),
-
-                      // Controls (+ / -) using Riverpod
-                      if (quantity == 0)
-                        IconButton(
-                          onPressed: () => ref.read(cartProvider.notifier).addToCart(product),
-                          icon: const Icon(Icons.add_circle, color: AppColors.primary, size: 30),
-                        )
-                      else
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: () => ref.read(cartProvider.notifier).removeFromCart(product),
-                              icon: const Icon(Icons.remove_circle_outline, color: AppColors.primary),
-                            ),
-                            Text(
-                              "$quantity",
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            IconButton(
-                              onPressed: () => ref.read(cartProvider.notifier).addToCart(product),
-                              icon: const Icon(Icons.add_circle, color: AppColors.primary),
-                            ),
-                          ],
-                        )
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+
+              // --- ÜRÜN LİSTESİ (Dikey) ---
+              Expanded(
+                // Kalan tüm boşluğu kapla
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 100), // Alttan boşluk (Sepet butonu için)
+                  itemCount: displayedProducts.length,
+                  itemBuilder: (context, index) {
+                    final product = displayedProducts[index];
+                    final quantity = cart[product] ?? 0;
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12), // Kartlar arası dikey boşluk
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 2, // Gölge efekti
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0), // İç boşluk
+                        child: Row(
+                          children: [
+                            // --- Ürün Resmi ---
+                            Container(
+                              width: 60,  // Resim genişliği
+                              height: 60, // Resim yüksekliği
+                              decoration: BoxDecoration(
+                                color: Colors.brown.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: product.imageUrl != null
+                                  ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(product.imageUrl!, fit: BoxFit.cover),
+                              )
+                                  : const Icon(Icons.fastfood, color: Colors.brown),
+                            ),
+                            const SizedBox(width: 16), // Resim ile yazı arası boşluk
+
+                            // --- Ürün Bilgisi ---
+                            Expanded(
+                              // Yazının sığdığı kadar alan kaplaması için
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product.name,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                  ),
+                                  Text(
+                                    "${product.price} ₺",
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // --- Artır/Azalt Butonları ---
+                            if (quantity == 0)
+                              IconButton(
+                                onPressed: () => ref.read(cartProvider.notifier).addToCart(product),
+                                icon: const Icon(Icons.add_circle, color: AppColors.primary, size: 30),
+                              )
+                            else
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () => ref.read(cartProvider.notifier).removeFromCart(product),
+                                    icon: const Icon(Icons.remove_circle_outline, color: AppColors.primary),
+                                  ),
+                                  Text(
+                                    "$quantity",
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                  ),
+                                  IconButton(
+                                    onPressed: () => ref.read(cartProvider.notifier).addToCart(product),
+                                    icon: const Icon(Icons.add_circle, color: AppColors.primary),
+                                  ),
+                                ],
+                              )
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),

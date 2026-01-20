@@ -11,6 +11,19 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
   return await service.getProducts();
 });
 
+// --- UI STATE NOTIFIER (Sepet Açık mı?) ---
+class IsCartOpenNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    return false; // Varsayılan değer
+  }
+
+  // Değeri değiştirmek için fonksiyonlar
+  void set(bool value) => state = value;
+  void toggle() => state = !state;
+}
+final isCartOpenProvider = NotifierProvider<IsCartOpenNotifier, bool>(IsCartOpenNotifier.new);
+
 // --- NOTIFIER (Sepet Mantığı - Riverpod 2.0 Modern Yapı) ---
 // StateNotifier yerine Notifier kullanıyoruz. Bu sınıf doğrudan paketin içindedir.
 class CartNotifier extends Notifier<Map<Product, int>> {

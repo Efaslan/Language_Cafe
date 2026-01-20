@@ -4,6 +4,8 @@ import '../models/cafe_table.dart';
 class TableService {
   final _supabase = Supabase.instance.client;
 
+  String? get currentUserId => _supabase.auth.currentUser?.id;
+
   Stream<List<CafeTable>> getTablesStream() {
     return _supabase
         .from('cafe_tables')
@@ -13,15 +15,34 @@ class TableService {
   }
 
   /// Masaya Oturma İşlemi
-  /// Business Logic: Kapasite kontrolü burada yapılır.
+  /// Eğer kullanıcı başka bir masadaysa önce oradan kaldırır, sonra yeni masaya oturtur.
   Future<void> joinTable({required CafeTable table, required String userId}) async {
+    // 1. Kullanıcının şu an aktif bir masası var mı kontrol et
+    // (left_at değeri NULL olan kayıt, kullanıcının hala oturduğu anlamına gelir)
+    final activeSession = await _supabase
+        .from('table_participants')
+        .select()
+        .eq('user_id', userId)
+        .isFilter('left_at', null)
+        .maybeSingle(); // Varsa tek bir kayıt döner, yoksa null
 
-    // 2. Veritabanı İşlemi
+    if (activeSession != null) {
+      // Eğer kullanıcı zaten TIKLANAN masadaysa, işlem yapma (Zaten oturuyor)
+      if (activeSession['table_id'] == table.id) {
+        return;
+      }
+
+      // Eğer BAŞKA bir masadaysa, önce o masadan kaldır (Çıkış saatini yaz)
+      await _supabase
+          .from('table_participants')
+          .update({'left_at': DateTime.now().toIso8601String()})
+          .eq('id', activeSession['id']); // Spesifik satırı kapat
+    }
+
+    // 2. Yeni masaya kayıt at
     await _supabase.from('table_participants').insert({
       'table_id': table.id,
       'user_id': userId,
-      // created_at otomatik now() olur
-      // left_at null olur (aktif)
     });
   }
 

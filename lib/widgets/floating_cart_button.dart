@@ -18,9 +18,6 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
   // Dialog açmak için kullanılacak Context'i getiren yardımcı
   BuildContext? get _navContext => navigatorKey.currentContext;
 
-  // Sepetin açık olup olmadığını takip eden state
-  bool _isCartOpen = false;
-
   Future<void> _submitOrder(CafeTable currentTable) async {
     final cart = ref.read(cartProvider);
     final menuService = ref.read(menuServiceProvider);
@@ -57,12 +54,10 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
 
   void _openCartDrawer() {
     if (_navContext == null) return;
+    ref.read(isCartOpenProvider.notifier).set(true);
 
-    setState(() {
-      _isCartOpen = true;
-    });
-
-    final currentTableAsync = ref.refresh(currentTableProvider);
+    // Tablo bilgisini tazeleyelim
+    ref.refresh(currentTableProvider);
 
     showModalBottomSheet(
       context: _navContext!,
@@ -233,11 +228,12 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
         );
       },
     ).whenComplete(() async {
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Sepet KAPANDI: Animasyonun bitmesini bekle ve butonu geri getir
+      await Future.delayed(const Duration(milliseconds: 200));
+
       if (mounted) {
-        setState(() {
-          _isCartOpen = false;
-        });
+        // Global provider'ı güncelle: Sepet kapandı, butonu göster
+        ref.read(isCartOpenProvider.notifier).set(false);
       }
     });
   }
@@ -277,7 +273,10 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
   Widget build(BuildContext context) {
     final totalItems = ref.watch(cartItemCountProvider);
 
-    if (totalItems == 0 || _isCartOpen) return const SizedBox.shrink();
+    final isCartOpen = ref.watch(isCartOpenProvider);
+
+    // Eğer sepet boşsa VEYA sepet paneli açıksa butonu gösterme
+    if (totalItems == 0 || isCartOpen) return const SizedBox.shrink();
 
     return Positioned(
       right: 0,

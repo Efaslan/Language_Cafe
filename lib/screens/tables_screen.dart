@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Riverpod
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/table_service.dart';
 import '../models/cafe_table.dart';
 import '../constants/app_colors.dart';
+import '../providers/table_provider.dart'; // Provider'ı çağır
 
-class TablesScreen extends StatefulWidget {
+class TablesScreen extends ConsumerStatefulWidget {
   const TablesScreen({super.key});
 
   @override
-  State<TablesScreen> createState() => _TablesScreenState();
+  ConsumerState<TablesScreen> createState() => _TablesScreenState();
 }
 
-class _TablesScreenState extends State<TablesScreen> {
+class _TablesScreenState extends ConsumerState<TablesScreen> {
   final _tableService = TableService();
   final _supabase = Supabase.instance.client;
 
-  // Canlı akışın bozulmaması için stream'i değişkende tutuyoruz
   late final Stream<List<CafeTable>> _tablesStream;
 
   @override
   void initState() {
     super.initState();
-    // Stream'i sadece bir kere, ekran açılırken başlatıyoruz.
-    // Build metodu içinde çağırılırsa her yenilemede bağlantı kopup gelir (flicker yapar).
     _tablesStream = _tableService.getTablesStream();
   }
 
@@ -32,13 +31,18 @@ class _TablesScreenState extends State<TablesScreen> {
     if (user == null) return;
 
     try {
+      // 1. Veritabanı İşlemi
       await _tableService.joinTable(table: table, userId: user.id);
+
+      // 2. KRİTİK NOKTA: Riverpod'u Güncelle
+      // Bu komut sayesinde "DraggableTableBubble" ve "FloatingCartButton"
+      // anında yeni masa bilgisini çeker ve kendini günceller.
+      ref.invalidate(currentTableProvider);
 
       if (mounted) {
         String message = "Masa ${table.tableNumber}'e oturdunuz! İyi sohbetler ☕";
         Color color = AppColors.success;
 
-        // DÜZELTME: Modeldeki isme uygun olarak currentChairCount kullanıldı
         if (table.activeCount >= table.currentChairCount) {
           message = "Sandalye çekip katıldınız! Harika ortam 🪑";
           color = AppColors.success;
@@ -137,7 +141,7 @@ class _TablesScreenState extends State<TablesScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("Canlı Masalar"),
+        title: const Text("Masalar"),
         backgroundColor: AppColors.background,
         actions: [
           IconButton(
@@ -148,7 +152,7 @@ class _TablesScreenState extends State<TablesScreen> {
         ],
       ),
       body: StreamBuilder<List<CafeTable>>(
-        stream: _tablesStream, // Sabit stream kullanılıyor
+        stream: _tablesStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -203,7 +207,6 @@ class _TablesScreenState extends State<TablesScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        // DÜZELTME: Modeldeki doğru alan adı (currentChairCount)
                         "${table.activeCount} / ${table.currentChairCount}",
                         style: const TextStyle(color: AppColors.primary),
                       ),

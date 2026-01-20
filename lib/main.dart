@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/update_password_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'widgets/floating_cart_button.dart';
+import 'widgets/draggable_table_bubble.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -45,9 +46,25 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return Stack(
           children: [
+            // 1. Sayfalar (Navigator - Uygulamanın Kendisi)
             if (child != null) child,
-            // sepet boşsa zaten gizli olduğu için sorun olmaz.
-            // Yine de kullanıcı oturum açmamışsa göstermemek mantıklı olabilir.
+
+            // 2. Masa Balonu (Sürüklenebilir)
+            // Draggable widget'ı çalışmak için bir Overlay'e ihtiyaç duyar.
+            // Bu yüzden onu kendi özel Overlay'i içine alıyoruz.
+            Overlay(
+              initialEntries: [
+                OverlayEntry(
+                  builder: (context) => const Stack(
+                    children: [
+                      DraggableTableBubble(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            // 3. Sepet Butonu (Sabit)
             const FloatingCartButton(),
           ],
         );
