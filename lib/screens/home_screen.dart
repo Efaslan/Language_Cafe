@@ -1,65 +1,62 @@
 import 'package:flutter/material.dart';
-import '../services/user_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
+import '../providers/user_provider.dart';
 import 'tables_screen.dart';
 import 'profile_screen.dart';
 import 'menu_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final _userService = UserService();
-  String _userName = "Misafir";
-
-  @override
-  void initState() {
-    super.initState();
-    // İlk açılışta CACHE'den oku (Anında gelir)
-    _loadNameFromCache();
-  }
-
-  // Veritabanına gitmeden, direkt eldeki veriden ismi alır
-  void _loadNameFromCache() {
-    final name = _userService.cachedFirstName;
-    if (name != null && mounted) {
-      setState(() {
-        _userName = name;
-      });
-    }
-  }
-
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    // If the data is loading, error, or available, 'userProfileAsync' handles it.
+    // 1. Provider'ı izliyoruz
+    final userProfileAsync = ref.watch(userProfileProvider);
+
+    // 2. AKILLI İSİM GÖSTERİMİ (Cache-First)
+    // Eğer veri geldiyse (AsyncData) değerini al, yoksa null dön.
+    final profile = userProfileAsync.asData?.value;
+
+    final displayName = (profile?.firstName.isNotEmpty == true)
+        ? profile!.firstName
+        : "Misafir";
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        // Sol üst: Karşılama mesajı
+        // Left: Welcome Text
         title: Text(
-          "Hoş geldin, $_userName",
+          "Hoş geldin, $displayName",
           style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppColors.primary
           ),
         ),
-        // Sağ üst: Profil ikonu
+        // Right: Profile Icon
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: InkWell(
               onTap: () {
-                // Profil sayfasına git ve dönünce ismi güncelle
+                // Navigate to Profile
                 Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const ProfileScreen())
-                ).then((_) => _loadNameFromCache());
+                ).then((_) {
+                  // When returning from profile, simply invalidate the provider.
+                  // Riverpod will automatically re-fetch the data in the background.
+                  ref.invalidate(userProfileProvider);
+                });
               },
               child: const CircleAvatar(
                 backgroundColor: AppColors.primary,
@@ -69,8 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         ],
       ),
-      // STACK STRUCTURE: Future image overlay için yer tutucu
-      body: Stack(
+      body: Stack( // stack structure
         children: [
           // LAYER 1: Main Content
           Padding(
@@ -84,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                     children: [
-                      // Masalar Kartı
+                      // Tables Card
                       _DashboardCard(
                         title: "Masalar",
                         icon: Icons.table_bar,
@@ -96,13 +92,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         },
                       ),
-                      // Menü & Sipariş Kartı (GÜNCELLENDİ)
+                      // Menu & Order Card
                       _DashboardCard(
                         title: "Menü & Sipariş",
                         icon: Icons.restaurant_menu,
                         color: Colors.blue.shade100,
                         onTap: () {
-                          // Menü ekranına yönlendirme
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const MenuScreen()),
@@ -116,20 +111,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // LAYER 2: Placing custom arrow image here later
+          // Custom arrow image placeholder
           /* Positioned(
             bottom: 85,
             right: 30,
             child: Image.asset('assets/arrow_nudge.png', width: 150),
-          ),
-          */
+          ), */
         ],
       ),
 
-      // LAYER 3: QR Button (FAB)
+      // LAYER 2: QR Button (FAB)
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Future: Navigate to QR Scanner
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Kamera açılıyor... 📷")),
           );

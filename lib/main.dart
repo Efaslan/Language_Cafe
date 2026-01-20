@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/update_password_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +16,12 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY'] ?? '',
   );
 
-  runApp(const MyApp());
+  runApp(
+    // UYGULAMAYI ProviderScope İLE SARMALA
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
