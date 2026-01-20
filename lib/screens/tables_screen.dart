@@ -13,7 +13,18 @@ class TablesScreen extends StatefulWidget {
 
 class _TablesScreenState extends State<TablesScreen> {
   final _tableService = TableService();
-  final _supabase = Supabase.instance.client; // Sadece User ID almak için
+  final _supabase = Supabase.instance.client;
+
+  // Canlı akışın bozulmaması için stream'i değişkende tutuyoruz
+  late final Stream<List<CafeTable>> _tablesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    // Stream'i sadece bir kere, ekran açılırken başlatıyoruz.
+    // Build metodu içinde çağırılırsa her yenilemede bağlantı kopup gelir (flicker yapar).
+    _tablesStream = _tableService.getTablesStream();
+  }
 
   // Masaya Oturma Mantığı
   Future<void> _handleJoinTable(CafeTable table) async {
@@ -21,18 +32,16 @@ class _TablesScreenState extends State<TablesScreen> {
     if (user == null) return;
 
     try {
-      // 1. Servis Çağrısı (Artık hata fırlatmaz, direkt oturur)
       await _tableService.joinTable(table: table, userId: user.id);
 
       if (mounted) {
-        // 2. Mesaj Mantığı (Feedback Logic)
         String message = "Masa ${table.tableNumber}'e oturdunuz! İyi sohbetler ☕";
         Color color = AppColors.success;
 
-        // Eğer kapasite doluyken oturduysa özel mesaj göster
+        // DÜZELTME: Modeldeki isme uygun olarak currentChairCount kullanıldı
         if (table.activeCount >= table.currentChairCount) {
           message = "Sandalye çekip katıldınız! Harika ortam 🪑";
-          color = AppColors.success; // Uyarı değil, yesil renk success
+          color = AppColors.success;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -59,20 +68,19 @@ class _TablesScreenState extends State<TablesScreen> {
   void _showInfoDialog() {
     showDialog(
       context: context,
-      barrierDismissible: true, // Ekrana dokununca kapanır
-      barrierColor: Colors.black.withOpacity(0.1), // Arka tarafı çok az karart
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.1),
       builder: (context) => Dialog(
-        backgroundColor: const Color(0xFFFFF8E1), // Çok açık krem rengi (Yumuşak)
+        backgroundColor: const Color(0xFFFFF8E1),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24), // Yuvarlak hatlar (Baloncuk gibi)
+          borderRadius: BorderRadius.circular(24),
         ),
         elevation: 5,
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // İçerik kadar yer kapla
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // İkon ve Başlık
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -90,20 +98,18 @@ class _TablesScreenState extends State<TablesScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Metin
               const Text(
                 "Masa dolulukları sadece bilgilendirme amaçlıdır.\n\nOturmak istediğiniz yerler dolu da olsa istediğiniz gibi sandalye çekebilirsiniz :)",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.black87,
-                  height: 1.5, // Satır arası boşluk
+                  height: 1.5,
                 ),
               ),
 
               const SizedBox(height: 24),
 
-              // Kapat Butonu
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -134,7 +140,6 @@ class _TablesScreenState extends State<TablesScreen> {
         title: const Text("Canlı Masalar"),
         backgroundColor: AppColors.background,
         actions: [
-          // Sağ Üst Köşedeki Bilgilendirme İkonu
           IconButton(
             icon: const Icon(Icons.info_outline, color: AppColors.primary),
             tooltip: "Bilgilendirme",
@@ -143,7 +148,7 @@ class _TablesScreenState extends State<TablesScreen> {
         ],
       ),
       body: StreamBuilder<List<CafeTable>>(
-        stream: _tableService.getTablesStream(),
+        stream: _tablesStream, // Sabit stream kullanılıyor
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -181,7 +186,6 @@ class _TablesScreenState extends State<TablesScreen> {
                 elevation: 4,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 child: InkWell(
-                  // Şimdilik tıklayınca oturuyor (QR simülasyonu)
                   onTap: () => _handleJoinTable(table),
                   borderRadius: BorderRadius.circular(16),
                   child: Column(
@@ -199,6 +203,7 @@ class _TablesScreenState extends State<TablesScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
+                        // DÜZELTME: Modeldeki doğru alan adı (currentChairCount)
                         "${table.activeCount} / ${table.currentChairCount}",
                         style: const TextStyle(color: AppColors.primary),
                       ),
