@@ -41,4 +41,16 @@ class MenuService {
       await _supabase.from('orders').insert(orderRows);
     }
   }
+
+  Future<List<Map<String, dynamic>>> getTableOrders(int tableId) async {
+    final data = await _supabase
+        .from('orders')
+        .select('quantity, status, products(name, price)') // İlişkili ürün bilgilerini de çek
+        .eq('table_id', tableId)
+        .neq('status', 'Paid') // Ödenmişleri gösterme (Aktif siparişler)
+        .neq('status', 'Cancelled')
+        .order('created_at', ascending: false);
+
+    return List<Map<String, dynamic>>.from(data);
+  }
 }

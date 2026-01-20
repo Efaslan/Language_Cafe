@@ -83,4 +83,16 @@ class TableService {
       return null;
     }
   }
+
+  Future<List<Map<String, dynamic>>> getTableParticipants(int tableId) async {
+    // table_participants tablosundan user_id'yi al, sonra profiles tablosuna git detayları al
+    final data = await _supabase
+        .from('table_participants')
+        .select('profiles(first_name, last_name, avatar_url)')
+        .eq('table_id', tableId)
+        .isFilter('left_at', null); // Sadece şu an oturanlar
+
+    // Veriyi düzleştirip listeye çeviriyoruz
+    return List<Map<String, dynamic>>.from(data.map((e) => e['profiles']));
+  }
 }
