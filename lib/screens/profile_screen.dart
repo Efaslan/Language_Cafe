@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import 'dart:io';
 import '../services/user_service.dart';
 import '../constants/app_colors.dart';
@@ -128,18 +129,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         title: const Text("Profil Düzenle"),
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
+        iconTheme: IconThemeData(color: context.appTextColor),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            backgroundColor: Colors.transparent,
+            backgroundColor: AppColors.transparent,
             builder: (context) => FractionallySizedBox(
               heightFactor: 0.6,
               child: const SettingsSheet(),
@@ -164,7 +167,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 60,
-                      backgroundColor: Colors.brown.shade200,
+                      backgroundColor: AppColors.brownShade200,
                       backgroundImage: _avatarFile != null
                           ? FileImage(_avatarFile!)
                           : null,
@@ -244,9 +247,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               runSpacing: 4.0,
               children: _learningLanguages.map((lang) {
                 return Chip(
-                  label: Text(lang),
-                  backgroundColor: Colors.brown.shade100,
-                  deleteIcon: const Icon(Icons.close, size: 18),
+                  label: Text(
+                    lang,
+                    style: TextStyle(
+                      color: context.isDark ? Colors.white : AppColors.primary, // Yazı rengi
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  backgroundColor: context.isDark
+                      ? AppColors.primary.withValues(alpha: 0.4) // Karanlıkta şeffaf kahve
+                      : Colors.brown.shade100, // Aydınlıkta açık kahve
+                  deleteIcon: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: context.isDark ? AppColors.white70 : AppColors.primary, // İkon rengi
+                  ),
+                  side: BorderSide.none, // Kenarlık olmasın
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   onDeleted: () {
                     setState(() {
                       _learningLanguages.remove(lang);
@@ -255,8 +272,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 );
               }).toList(),
             ),
-
-            // ... Diğer alanlar (Switch, Buton) aynı ...
 
             const SizedBox(height: 24),
 
@@ -267,8 +282,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               title: Text(
                 _isPublic ? "Profilim Herkese Açık" : "Profilim Gizli",
                 style: TextStyle(
-                    color: _isPublic ? Colors.black : Colors.grey,
-                    fontWeight: _isPublic ? FontWeight.normal : FontWeight.bold
+                    color: context.isDark ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.normal
                 ),
               ),
               subtitle: const Text("Kapalıyken diğer kullanıcılar profilinizi göremez."),

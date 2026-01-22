@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import '../constants/app_colors.dart';
 import '../providers/menu_provider.dart';
 import '../providers/table_provider.dart';
@@ -61,7 +62,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
 
     showModalBottomSheet(
       context: _navContext!,
-      backgroundColor: Colors.white,
+      backgroundColor: context.isDark ? AppColors.darkBackground : AppColors.white,
       isScrollControlled: true, // Tam boy kontrolü için
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -84,7 +85,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
 
                     Expanded(
                       child: cart.isEmpty
-                          ? const Center(child: Text("Sepetiniz boş 🛒", style: TextStyle(color: Colors.grey, fontSize: 16)))
+                          ? const Center(child: Text("Sepetiniz boş 🛒", style: TextStyle(color: AppColors.grey, fontSize: 16)))
                           : ListView.separated(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         itemCount: cart.length,
@@ -102,7 +103,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                                   width: 65,
                                   height: 65,
                                   decoration: BoxDecoration(
-                                    color: Colors.brown.shade50,
+                                    color: AppColors.brownShade50,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: product.imageUrl != null
@@ -110,7 +111,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                                     borderRadius: BorderRadius.circular(8),
                                     child: Image.network(product.imageUrl!, fit: BoxFit.cover),
                                   )
-                                      : const Icon(Icons.fastfood, color: Colors.brown, size: 24),
+                                      : const Icon(Icons.fastfood, color: AppColors.primary, size: 24),
                                 ),
                                 const SizedBox(width: 12),
 
@@ -134,7 +135,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                                             child: Container(
                                               padding: const EdgeInsets.all(4),
                                               decoration: BoxDecoration(
-                                                color: Colors.grey.shade200,
+                                                color: AppColors.greyShade200,
                                                 shape: BoxShape.circle,
                                               ),
                                               child: const Icon(Icons.remove, size: 16, color: AppColors.primary),
@@ -155,7 +156,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                                                 color: AppColors.primary,
                                                 shape: BoxShape.circle,
                                               ),
-                                              child: const Icon(Icons.add, size: 16, color: Colors.white),
+                                              child: const Icon(Icons.add, size: 16, color: AppColors.white),
                                             ),
                                           ),
                                         ],
@@ -206,7 +207,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                               onPressed: cart.isEmpty ? null : () => _submitOrder(currentTable),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
+                                foregroundColor: AppColors.white,
                               ),
                               child: Text(
                                 "Sipariş Ver (Masa ${currentTable.tableNumber})",
@@ -244,7 +245,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
         const Text(
           "Lütfen sipariş vermeden önce masanızdaki QR kodunu okutun",
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.redAccent),
+          style: TextStyle(color: AppColors.redAccent),
         ),
         const SizedBox(height: 10),
         SizedBox(
@@ -260,8 +261,8 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
             icon: const Icon(Icons.qr_code_scanner),
             label: const Text("QR Okut"),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.grey,
+              foregroundColor: AppColors.white,
             ),
           ),
         ),
@@ -282,7 +283,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
       right: 0,
       top: MediaQuery.of(context).size.height / 2,
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: _openCartDrawer,
           borderRadius: const BorderRadius.only(
@@ -299,7 +300,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black26,
+                  color: AppColors.black26,
                   blurRadius: 8,
                   offset: Offset(0, 4),
                 )
@@ -307,14 +308,14 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.shopping_cart, color: Colors.white),
+                const Icon(Icons.shopping_cart, color: AppColors.white),
                 const SizedBox(width: 4),
                 Text(
                   "$totalItems",
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.arrow_back_ios_new, size: 16, color: Colors.white70),
+                const Icon(Icons.arrow_back_ios_new, size: 16, color: AppColors.white70),
               ],
             ),
           ),

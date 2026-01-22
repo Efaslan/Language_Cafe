@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import '../providers/menu_provider.dart';
 import '../constants/app_colors.dart';
 
@@ -21,10 +22,10 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final cart = ref.watch(cartProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         title: const Text("Menü"),
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
         centerTitle: true, // Başlığı ortalar
       ),
       body: productsAsync.when(
@@ -34,7 +35,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
           // --- KATEGORİ MANTIĞI ---
           // 1. Veritabanındaki ürünlerden benzersiz kategorileri çıkar
-          final categories = ['Hepsi', ...allProducts.map((e) => e.category).toSet().toList()];
+          final categories = ['Hepsi', ...allProducts.map((e) => e.category).toSet()];
 
           // 2. Seçili kategoriye göre ürünleri filtrele
           final displayedProducts = _selectedCategory == 'Hepsi'
@@ -60,13 +61,13 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                         label: Text(
                           category,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : AppColors.primary,
+                            color: isSelected ? AppColors.white : AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         selected: isSelected,
                         selectedColor: AppColors.primary, // Seçili renk
-                        backgroundColor: Colors.white,    // Seçili olmayan renk
+                        backgroundColor: AppColors.white,    // Seçili olmayan renk
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20), // Kenar yuvarlaklığı
                           side: const BorderSide(color: AppColors.primary), // Çerçeve rengi
@@ -108,7 +109,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                               width: 60,  // Resim genişliği
                               height: 60, // Resim yüksekliği
                               decoration: BoxDecoration(
-                                color: Colors.brown.shade50,
+                                color: AppColors.brownShade50,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: product.imageUrl != null
@@ -116,7 +117,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                 borderRadius: BorderRadius.circular(8),
                                 child: Image.network(product.imageUrl!, fit: BoxFit.cover),
                               )
-                                  : const Icon(Icons.fastfood, color: Colors.brown),
+                                  : const Icon(Icons.fastfood, color: AppColors.primary),
                             ),
                             const SizedBox(width: 16), // Resim ile yazı arası boşluk
 
@@ -132,7 +133,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                   ),
                                   Text(
                                     "${product.price} ₺",
-                                    style: const TextStyle(color: Colors.grey),
+                                    style: const TextStyle(color: AppColors.grey),
                                   ),
                                 ],
                               ),

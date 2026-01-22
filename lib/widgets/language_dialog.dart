@@ -34,7 +34,7 @@ class _AddLanguageDialogState extends State<AddLanguageDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context), // Geriye null döner
-          child: const Text("İptal", style: TextStyle(color: Colors.grey)),
+          child: const Text("İptal", style: TextStyle(color: AppColors.grey)),
         ),
         ElevatedButton(
           onPressed: () {
@@ -45,7 +45,7 @@ class _AddLanguageDialogState extends State<AddLanguageDialog> {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColors.white,
           ),
           child: const Text("Ekle"),
         ),

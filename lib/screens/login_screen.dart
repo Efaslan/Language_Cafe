@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import '../services/auth_service.dart';
 import '../constants/app_colors.dart';
 import '../utils/validators.dart';
@@ -73,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -143,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     child: const Text(
                       "Şifremi Unuttum?",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.grey),
                     ),
                   ),
                 ),

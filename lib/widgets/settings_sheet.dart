@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import '../services/auth_service.dart';
 import '../constants/app_colors.dart';
 import '../screens/login_screen.dart';
 import '../screens/account_settings_screen.dart';
+import '../providers/theme_provider.dart';
 
-class SettingsSheet extends StatefulWidget {
+class SettingsSheet extends ConsumerStatefulWidget {
   const SettingsSheet({super.key});
 
   @override
-  State<SettingsSheet> createState() => _SettingsSheetState();
+  ConsumerState<SettingsSheet> createState() => _SettingsSheetState();
 }
 
-class _SettingsSheetState extends State<SettingsSheet> {
+class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   final _authService = AuthService();
 
   // UI Demo States
-  bool _isDarkMode = false;
   bool _notificationsEnabled = true;
 
   // Sign out logic
@@ -39,7 +41,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("İptal", style: TextStyle(color: Colors.grey)),
+            child: const Text("İptal", style: TextStyle(color: AppColors.grey)),
           ),
           TextButton(
             onPressed: () {
@@ -47,7 +49,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
               Navigator.pop(context);
               _signOut();
             },
-            child: const Text("Çıkış Yap", style: TextStyle(color: AppColors.error)),
+            child: const Text("Çıkış Yap", style: TextStyle(color: AppColors.redAccent)),
           ),
         ],
       ),
@@ -56,10 +58,14 @@ class _SettingsSheetState extends State<SettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
+
+    // 1. Temayı Dinle: Riverpod'dan gelen değeri al
+    final themeMode = ref.watch(themeProvider);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-      decoration: const BoxDecoration(
-        color: Color(0xFFFCFCFC), // Daha yumuşak bir beyaz (Kırık Beyaz)
+      decoration: BoxDecoration(
+        color: context.backgroundColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -73,7 +79,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: AppColors.greyShade300,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -91,8 +97,8 @@ class _SettingsSheetState extends State<SettingsSheet> {
                     contentPadding: EdgeInsets.zero, // Kenar boşluklarını sıfırla, düz dursun
                     leading: const Icon(Icons.manage_accounts, color: AppColors.primary),
                     title: const Text("Hesap Ayarları", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                    subtitle: const Text("Email, Şifre, Üyelik Tarihi", style: TextStyle(color: Colors.grey)),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                    subtitle: const Text("Email, Şifre, Üyelik Tarihi", style: TextStyle(color: AppColors.grey)),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.grey),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -107,17 +113,18 @@ class _SettingsSheetState extends State<SettingsSheet> {
                   ),
 
                   // --- App Settings Section ---
-                  const Text("Uygulama Ayarları (Yakında)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey)),
+                  const Text("Uygulama Ayarları (Yakında)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.grey)),
                   const SizedBox(height: 5),
 
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text("Gece Görünümü", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     secondary: const Icon(Icons.dark_mode, color: AppColors.primary),
-                    value: _isDarkMode,
+                    value: context.isDark, // Provider'dan gelen değer
                     activeTrackColor: AppColors.primary,
                     onChanged: (bool value) {
-                      setState(() => _isDarkMode = value);
+                      // Provider'ı güncelle
+                      ref.read(themeProvider.notifier).toggleTheme(value);
                     },
                   ),
 
@@ -126,7 +133,7 @@ class _SettingsSheetState extends State<SettingsSheet> {
                     leading: const Icon(Icons.language, color: AppColors.primary),
                     title: const Text("Uygulama Dili", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     subtitle: const Text("Türkçe"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.grey),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Çok yakında...")),
@@ -153,8 +160,8 @@ class _SettingsSheetState extends State<SettingsSheet> {
                   // --- Danger Zone ---
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.logout, color: AppColors.error),
-                    title: const Text("Çıkış Yap", style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 16)),
+                    leading: const Icon(Icons.logout, color: AppColors.redAccent),
+                    title: const Text("Çıkış Yap", style: TextStyle(color: AppColors.redAccent, fontWeight: FontWeight.bold, fontSize: 16)),
                     onTap: _confirmSignOut,
                   ),
                   const SizedBox(height: 40),

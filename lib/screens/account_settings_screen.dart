@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:language_cafe/constants/app_colors.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:async';
 import '../services/user_service.dart';
@@ -161,10 +161,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         title: const Text("Hesap Ayarları"),
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -176,24 +176,28 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.brown.shade50,
+                color: context.isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.brownShade50,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.brown.shade100),
+                border: Border.all(
+                    color: context.isDark
+                    ? AppColors.primary.withValues(alpha: 0.3)
+                    : AppColors.brownShade100),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today, color: Colors.brown),
+                  const Icon(Icons.calendar_today, color: AppColors.primary),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         "Hesap Oluşturulma Tarihi",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(
+                            fontSize: 13),
                       ),
                       Text(
                         _createdAt,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.brown),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
                       ),
                     ],
                   ),
@@ -204,7 +208,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
             const Text(
               "Giriş Bilgileri",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
 
@@ -235,8 +239,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               child: ElevatedButton(
                 onPressed: _updateAccount,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.brown,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
                 ),
                 child: const Text("Hesap Bilgilerini Güncelle", style: TextStyle(fontSize: 16)),
               ),

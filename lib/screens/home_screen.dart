@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import '../constants/app_colors.dart';
 import '../providers/user_provider.dart';
 import 'tables_screen.dart';
@@ -26,17 +27,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // 2. AKILLI İSİM GÖSTERİMİ (Cache-First)
     // Eğer veri geldiyse (AsyncData) değerini al, yoksa null dön.
-    final profile = userProfileAsync.asData?.value;
-
     final String displayName =
         userProfileAsync.asData?.value.firstName ?? // 1. Taze Veri
             _userService.cachedFirstName ??             // 2. Cache (Anında)
             "";
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
         elevation: 0,
         // Left: Welcome Text
         title: Text(
@@ -89,7 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       _DashboardCard(
                         title: "Masalar",
                         icon: Icons.table_bar,
-                        color: Colors.orange.shade100,
+                        color: AppColors.orangeShade100,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -101,7 +100,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       _DashboardCard(
                         title: "Menü & Sipariş",
                         icon: Icons.restaurant_menu,
-                        color: Colors.blue.shade100,
+                        color: AppColors.blueShade100,
                         onTap: () {
                           Navigator.push(
                             context,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import '../models/cafe_table.dart';
 import '../services/table_service.dart';
 import '../services/menu_service.dart';
@@ -64,7 +65,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
         if (mounted) {
           Navigator.pop(context); // Sayfayı kapat
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Masadan ayrıldınız. 👋"), backgroundColor: Colors.grey),
+            const SnackBar(content: Text("Masadan ayrıldınız. 👋"), backgroundColor: AppColors.grey),
           );
         }
       }
@@ -84,14 +85,14 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("İptal", style: TextStyle(color: Colors.grey)),
+            child: const Text("İptal", style: TextStyle(color: AppColors.grey)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _leaveTable();
             },
-            child: const Text("Evet, Ayrıl", style: TextStyle(color: AppColors.error)),
+            child: const Text("Evet, Ayrıl", style: TextStyle(color: AppColors.redAccent)),
           ),
         ],
       ),
@@ -101,10 +102,10 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         title: Text("Masa ${widget.table.tableNumber} Detayı"),
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
         centerTitle: true,
       ),
       body: _isLoading
@@ -116,7 +117,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
           children: [
             // --- 1. MASA BİLGİSİ ---
             Card(
-              color: Colors.white,
+              color: AppColors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -129,7 +130,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
                       children: [
                         Text(
                           "Masa Kuralı",
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                          style: TextStyle(color: AppColors.greyShade600, fontSize: 12),
                         ),
                         Text(
                           widget.table.currentRule ?? "Kural Yok (Serbest)",
@@ -147,7 +148,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
             const Text("Masadakiler", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const SizedBox(height: 10),
             _participants.isEmpty
-                ? const Text("Kimse görünmüyor.", style: TextStyle(color: Colors.grey))
+                ? const Text("Kimse görünmüyor.", style: TextStyle(color: AppColors.grey))
                 : Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -156,11 +157,11 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
                 return Chip(
                   avatar: const CircleAvatar(
                     backgroundColor: AppColors.primary,
-                    child: Icon(Icons.person, size: 16, color: Colors.white),
+                    child: Icon(Icons.person, size: 16, color: AppColors.white),
                   ),
                   label: Text(name),
-                  backgroundColor: Colors.white,
-                  side: BorderSide(color: Colors.grey.shade300),
+                  backgroundColor: AppColors.white,
+                  side: BorderSide(color: AppColors.greyShade300),
                 );
               }).toList(),
             ),
@@ -176,11 +177,11 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
               padding: const EdgeInsets.all(16),
               width: double.infinity,
               decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200)
+                  border: Border.all(color: AppColors.greyShade200)
               ),
-              child: const Text("Henüz sipariş yok.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+              child: const Text("Henüz sipariş yok.", textAlign: TextAlign.center, style: TextStyle(color: AppColors.grey)),
             )
                 : ListView.builder(
               shrinkWrap: true,
@@ -197,7 +198,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
                   margin: const EdgeInsets.only(bottom: 8),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
-                    leading: const Icon(Icons.fastfood, color: Colors.brown),
+                    leading: const Icon(Icons.fastfood, color: AppColors.primary),
                     title: Text("$productName (x$quantity)"),
                     subtitle: Text("Durum: $status"),
                     trailing: Text(
@@ -220,8 +221,8 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
                 icon: const Icon(Icons.exit_to_app),
                 label: const Text("Masadan Ayrıl", style: TextStyle(fontSize: 16)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.redAccent,
+                  foregroundColor: AppColors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),

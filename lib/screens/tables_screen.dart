@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Riverpod
+import 'package:language_cafe/utils/context_extensions.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/table_service.dart';
 import '../models/cafe_table.dart';
@@ -73,7 +74,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
     showDialog(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(0.1),
+      barrierColor: AppColors.black.withValues(alpha: 0.1),
       builder: (context) => Dialog(
         backgroundColor: const Color(0xFFFFF8E1),
         shape: RoundedRectangleBorder(
@@ -107,7 +108,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.black87,
+                  color: AppColors.black87,
                   height: 1.5,
                 ),
               ),
@@ -120,7 +121,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -139,10 +140,10 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         title: const Text("Masalar"),
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline, color: AppColors.primary),
@@ -178,11 +179,11 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
 
               Color cardColor;
               if (table.status == 'Empty') {
-                cardColor = Colors.green.shade100;
+                cardColor = AppColors.greenShade100;
               } else if (table.status == 'Full') {
-                cardColor = Colors.red.shade100;
+                cardColor = AppColors.redShade100;
               } else {
-                cardColor = Colors.orange.shade100;
+                cardColor = AppColors.orangeShade100;
               }
 
               return Card(
@@ -215,7 +216,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppColors.white,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(

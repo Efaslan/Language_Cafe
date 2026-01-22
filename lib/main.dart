@@ -7,6 +7,9 @@ import 'screens/update_password_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'widgets/floating_cart_button.dart';
 import 'widgets/draggable_table_bubble.dart';
+import 'constants/app_theme.dart'; // Tema dosyasını import et
+import 'providers/theme_provider.dart';
+import 'dart:async';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -28,19 +31,23 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final themeMode = ref.watch(themeProvider);
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Language Cafe',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme, // Aydınlık Kıyafet
+      darkTheme: AppTheme.darkTheme, // Karanlık Kıyafet
+
+      // 3. Modu Belirle (Provider ne derse o)
+      themeMode: themeMode,
 
       // global cart button
       builder: (context, child) {
@@ -83,20 +90,35 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
+
+  late final StreamSubscription<AuthState> _authSubscription;
+
   @override
   void initState() {
     super.initState();
     // Auth olaylarını dinle
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
 
       // EĞER ŞİFRE SIFIRLAMA LİNKİYLE GELDİYSE
       if (event == AuthChangeEvent.passwordRecovery) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const UpdatePasswordScreen()),
-        );
+        // DÜZELTME: Async gap kontrolü
+        // Widget hala ekranda mı kontrol et
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+                builder: (context) => const UpdatePasswordScreen()),
+          );
+        }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    // Sayfa kapanırsa dinlemeyi bırak (Memory Leak önlemi)
+    _authSubscription.cancel();
+    super.dispose();
   }
 
   @override

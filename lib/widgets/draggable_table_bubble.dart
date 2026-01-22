@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_colors.dart';
 import '../providers/table_provider.dart';
 import '../providers/menu_provider.dart';
-import '../services/table_service.dart';
 import '../models/cafe_table.dart';
 import '../screens/table_detail_screen.dart';
 import '../main.dart'; // navigatorKey için
@@ -78,28 +77,28 @@ class _DraggableTableBubbleState extends ConsumerState<DraggableTableBubble> {
 
   Widget _buildBubble(CafeTable table, {bool isDragging = false}) {
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: Container(
         width: 70,
         height: 70,
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(isDragging ? 0.8 : 1.0),
+          color: AppColors.primary.withValues(alpha: isDragging ? 0.8 : 1.0),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: AppColors.black.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: AppColors.white, width: 2),
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
             const Icon(
                 Icons.table_restaurant,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 32
             ),
 
@@ -109,13 +108,13 @@ class _DraggableTableBubbleState extends ConsumerState<DraggableTableBubble> {
               child: Container(
                 padding: const EdgeInsets.all(5),
                 decoration: const BoxDecoration(
-                  color: Colors.redAccent,
+                  color: AppColors.redAccent,
                   shape: BoxShape.circle,
                 ),
                 child: Text(
                   "${table.tableNumber}",
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),

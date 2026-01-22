@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import '../services/auth_service.dart';
 import '../constants/app_colors.dart';
 import '../utils/validators.dart';
@@ -62,10 +63,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
         title: const Text("Şifre Sıfırlama"),
-        backgroundColor: AppColors.background,
+        backgroundColor: context.backgroundColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -84,7 +85,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const Text(
                 "E-posta adresinizi girin, size şifrenizi sıfırlamanız için bir bağlantı gönderelim.",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: AppColors.grey),
               ),
               const SizedBox(height: 30),
 
