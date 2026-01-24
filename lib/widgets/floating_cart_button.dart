@@ -29,7 +29,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
       Navigator.pop(_navContext!); // Sepeti kapat
 
       ScaffoldMessenger.of(_navContext!).showSnackBar(
-        const SnackBar(content: Text("Sipariş gönderiliyor... ⏳")),
+        SnackBar(content: Text(context.l10n.preparingOrder)),
       );
 
       await menuService.placeOrder(
@@ -41,7 +41,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
 
       if (mounted && _navContext != null) {
         ScaffoldMessenger.of(_navContext!).showSnackBar(
-          const SnackBar(content: Text("Siparişiniz alındı! Afiyet olsun ☕"), backgroundColor: AppColors.success),
+          SnackBar(content: Text(context.l10n.bonAppetit), backgroundColor: AppColors.success),
         );
       }
     } catch (e) {
@@ -80,12 +80,12 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                 height: 600,
                 child: Column(
                   children: [
-                    const Text("Sepetim", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    Text(context.l10n.myCart, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
                     const Divider(),
 
                     Expanded(
                       child: cart.isEmpty
-                          ? const Center(child: Text("Sepetiniz boş 🛒", style: TextStyle(color: AppColors.grey, fontSize: 16)))
+                          ? Center(child: Text(context.l10n.cartEmpty, style: TextStyle(color: AppColors.grey, fontSize: 16)))
                           : ListView.separated(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         itemCount: cart.length,
@@ -187,7 +187,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Toplam:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text(context.l10n.totalLabel, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         Text(
                           "${totalPrice.toStringAsFixed(2)} ₺",
                           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary),
@@ -210,7 +210,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                                 foregroundColor: AppColors.white,
                               ),
                               child: Text(
-                                "Sipariş Ver (Masa ${currentTable.tableNumber})",
+                                context.l10n.orderBtn(currentTable.tableNumber),
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ),

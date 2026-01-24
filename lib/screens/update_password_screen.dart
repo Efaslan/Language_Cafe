@@ -35,8 +35,10 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Şifreniz başarıyla güncellendi! Giriş yapılıyor... 🔒"),
+          SnackBar(
+            content: Text(
+              '${context.l10n.passwordChanged} Giriş yapılıyor...',
+            ),
             backgroundColor: AppColors.success,
           ),
         );
@@ -51,7 +53,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(ErrorHandler.getMessage(e)),
+              content: Text(ErrorHandler.getMessage(e, context)),
               backgroundColor: AppColors.error
           ),
         );
@@ -72,7 +74,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text("Yeni Şifre Belirle"),
+        title: Text(context.l10n.findNewPassword),
         backgroundColor: context.backgroundColor,
       ),
       body: Padding(
@@ -84,8 +86,8 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
             children: [
               const Icon(Icons.lock_open, size: 80, color: AppColors.primary),
               const SizedBox(height: 20),
-              const Text(
-                "Yeni Şifrenizi Girin",
+              Text(
+                context.l10n.enterNewPassword,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
               const SizedBox(height: 30),
@@ -94,9 +96,9 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
-                validator: (val) => Validators.validatePassword(val, message: "Yeni şifreniz en az 6 karakter olmalıdır"),
+                validator: (val) => Validators.validatePassword(val, context),
                 decoration: InputDecoration(
-                  labelText: 'Yeni Şifre',
+                  labelText: context.l10n.newPassword,
                   prefixIcon: const Icon(Icons.lock, color: AppColors.primary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
@@ -119,7 +121,7 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: AppColors.white)
-                      : const Text("Şifreyi Güncelle", style: TextStyle(fontSize: 18)),
+                      : Text(context.l10n.updatePassword, style: TextStyle(fontSize: 18)),
                 ),
               ),
             ],

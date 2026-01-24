@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(ErrorHandler.getMessage(e)),
+            content: Text(ErrorHandler.getMessage(e, context)),
             backgroundColor: AppColors.error,
           ),
         );
@@ -99,9 +99,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  validator: (val) => Validators.validateEmail(val, message: "Lütfen geçerli bir email girin"),
+                  validator: (val) => Validators.validateEmail(val, context),
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: context.l10n.emailLabel,
                     prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -118,9 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  validator: (val) => Validators.validatePassword(val, message: "Şifrenizi girin"),
+                  validator: (val) => Validators.validatePassword(val, context),
                   decoration: InputDecoration(
-                    labelText: 'Şifre',
+                    labelText: context.l10n.passwordLabel,
                     prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -142,8 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
                       );
                     },
-                    child: const Text(
-                      "Şifremi Unuttum?",
+                    child: Text(
+                      context.l10n.forgotPassword,
                       style: TextStyle(color: AppColors.grey),
                     ),
                   ),
@@ -166,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: AppColors.white)
-                        : const Text('Giriş Yap', style: TextStyle(fontSize: 18)),
+                        : Text(context.l10n.loginBtn, style: TextStyle(fontSize: 18)),
                   ),
                 ),
 
@@ -180,8 +180,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(builder: (context) => const RegisterScreen()),
                       );
                     },
-                    child: const Text(
-                      "Hesabın yok mu? Kayıt Ol",
+                    child: Text(
+                      context.l10n.registerMsg,
                       style: TextStyle(color: AppColors.primary),
                     )
                 ),

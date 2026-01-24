@@ -1,0 +1,149 @@
+{
+  "emailLabel": "Email",
+  "passwordLabel": "Şifre",
+  "loginBtn": "Giriş Yap",
+
+  "registerBtn": "Kayıt Ol",
+  "registerMsg": "Hesabın yok mu? Kayıt Ol",
+  "registerSuccess": "Kayıt Başarılı! Lütfen email adresinizi doğrulayın. 📧",
+  "joinUs": "Aramıza Katıl",
+  "nameRequired": "Size nasıl hitap edelim?",
+  "emailRequired": "Size bir mail göndermemiz gerekiyor!",
+  "hasAcc": "Zaten hesabın var mı? Giriş Yap",
+
+  "confirmLogoutMsg": "Hesabınızdan çıkış yapmak istediğinize emin misiniz?",
+  "logoutLabel": "Çıkış Yap",
+  "cancelBtn": "İptal",
+
+  "welcomeTitle": "Hoş geldin, {name}",
+
+  "profileUpdated": "Profil güncellendi! ✅",
+  "myProfile": "Profilim",
+  "personalInfo": "Kişisel Bilgiler",
+  "firstName": "Ad",
+  "lastName": "Soyad",
+  "aboutMe": "Hakkımda",
+  "learningLanguages": "Öğrenilen Diller",
+  "addLang": "Dil Ekle",
+  "egLang": "Örn: İngilizce, Fransızca",
+  "addBtn": "Ekle",
+  "privacyOptions": "Gizlilik Ayarları",
+  "profilePublic": "Profilim Herkese Açık",
+  "profileHidden": "Profilim Gizli",
+  "privacySubtitle": "Kapalıyken diğer kullanıcılar profilinizi göremez.",
+  "saveChangesBtn": "Değişiklikleri Kaydet",
+
+
+  "settingsTitle": "Ayarlar",
+  "accountSettings": "Hesap Ayarları",
+  "accountSubtitle": "Email, Şifre, Üyelik Tarihi",
+  "accCreationDate": "Hesap Oluşturulma Tarihi",
+  "loginData": "Giriş Bilgileri",
+  "ifEmailChange": "Değiştirirseniz yeni adresinize doğrulama maili göndereceğiz",
+  "emailChanged": "E-posta değişikliği isteği alındı! Lütfen yeni adresinize gelen linke tıklayın. 📧",
+  "ifPasswordChange": "Değiştirmek istemiyorsanız boş bırakabilirsiniz",
+  "passwordChanged": "Şifreniz başarıyla güncellendi! 🔒",
+  "emailAndPasswordChanged": "Şifre güncellendi! E-posta değişikliği için lütfen kutunuza gelen linke tıklayın. 📧",
+  "noChangesMade": "Değişiklik yapılmadı.",
+  "newPassword": "Yeni Şifre",
+  "updateAccInfo": "Hesap Bilgilerini Güncelle",
+
+  "resetPassword": "Şifre Sıfırlama",
+  "forgotPassword": "Şifrenizi mi Unuttunuz?",
+  "resetLinkMsg": "E-posta adresinizi girin, size şifrenizi sıfırlamanız için bir bağlantı gönderelim.",
+  "sendLinkBtn": "Bağlantı Gönder",
+  "sentLinkMsg": "Sıfırlama bağlantısı gönderildi! Lütfen e-postanızı kontrol edin. 📧",
+
+  "appSettings": "Uygulama Ayarları",
+  "darkMode": "Gece Görünümü",
+  "appLanguage": "Uygulama Dili",
+  "languageLabel": "Türkçe",
+  "notifications": "Bildirimler",
+
+  "tables": "Masalar",
+  "scanQrBtn": "QR Okut",
+  "scanQrMsg": "Lütfen sipariş vermeden önce masanızdaki QR kodunu okutun",
+  "leftTable": "Masadan ayrıldınız. 👋",
+  "leaveTable": "Masadan Ayrıl",
+  "confirmLeaveTable": "Masadan ayrılmak istediğinize emin misiniz?",
+  "yesLeaveTable": "Evet, Ayrıl",
+  "tableRule": "Masa Kuralı",
+  "noTableRule": "Kural Yok (Serbest)",
+  "tableParticipants": "Masadakiler",
+  "noParticipants": "Kimse görünmüyor.",
+  "openOrders": "Açık Siparişler",
+  "noOrdersYet": "Henüz sipariş yok.",
+  "pulledAChair": "Sandalye çekip katıldınız! Harika ortam 🪑",
+  "tableChairsInfoSection": "Bilgilendirme",
+  "infoText": "Masa dolulukları sadece bilgilendirme amaçlıdır.\n\nOturmak istediğiniz yerler dolu da olsa istediğiniz gibi sandalye çekebilirsiniz :)",
+  "ok": "Tamam",
+  "tableJoinedMsg": "Masa {tableNumber}'e oturdunuz! İyi sohbetler ☕",
+  "tableName": "Masa {tableNumber}",
+  "tableDetailTitle": "Masa {tableNumber} Detayı",
+
+  "menuTab": "Menü & Sipariş",
+  "menuLabel": "Menü",
+  "allCategories": "Hepsi",
+  "myCart": "Sepetim",
+  "cartEmpty": "Sepetiniz boş 🛒",
+  "orderBtn": "Sipariş Ver (Masa {tableNumber})",
+  "preparingOrder": "Sipariş hazırlanıyor... ⏳",
+  "bonAppetit": "Siparişiniz alındı! Afiyet olsun ☕",
+  "totalLabel": "Toplam:",
+  "orderStatus": "Durum: {status}",
+
+  "findNewPassword": "Yeni Şifre Belirle",
+  "enterNewPassword": "Yeni Şifrenizi Girin",
+  "updatePassword": "Şifreyi Güncelle",
+
+  "errorInvalidLogin": "Giriş bilgileri hatalı. Lütfen kontrol edin.",
+  "errorUserNotFound": "Bu email ile kayıtlı kullanıcı bulunamadı.",
+  "errorUserExists": "Bu e-posta adresi zaten kullanımda.",
+  "errorWeakPassword": "Şifre yeterince güvenli değil.",
+  "errorInvalidLink": "Linkin süresi dolmuş veya geçersiz.",
+  "errorAuthDefault": "Giriş hatası: {message}",
+  "errorDbDefault": "Veritabanı hatası: {message}",
+  "errorUnknown": "Beklenmedik bir hata oluştu: {error}",
+  "valEmailRequired": "Email alanı zorunludur.",
+  "valEmailInvalid": "Lütfen geçerli bir email adresi giriniz.",
+  "valPassRequired": "Şifre alanı zorunludur.",
+  "valPassTooShort": "Şifre en az 6 karakter olmalıdır.",
+  "valRequired": "Bu alan zorunludur.",
+
+  "@tableJoinedMsg": {
+    "placeholders": {
+      "tableNumber": {
+        "type": "int"
+      }
+    }
+  },
+  "@tableName": {
+    "placeholders": {
+      "tableNumber": {
+        "type": "int"
+      }
+    }
+  },
+    "@tableDetailTitle": {
+      "placeholders": {
+        "tableNumber": { "type": "int" }
+      }
+    },
+  "@orderStatus": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "@welcomeTitle": {
+      "placeholders": {
+        "name": {}
+      }
+    },
+  "@orderBtn": {
+      "placeholders": {
+        "tableNumber": {}
+      }
+    }
+}

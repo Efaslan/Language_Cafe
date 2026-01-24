@@ -39,7 +39,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         elevation: 0,
         // Left: Welcome Text
         title: Text(
-          "Hoş geldin, $displayName",
+          context.l10n.welcomeTitle(displayName),
           style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -86,7 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       // Tables Card
                       _DashboardCard(
-                        title: "Masalar",
+                        title: context.l10n.tables,
                         icon: Icons.table_bar,
                         color: AppColors.orangeShade100,
                         onTap: () {
@@ -98,7 +98,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       // Menu & Order Card
                       _DashboardCard(
-                        title: "Menü & Sipariş",
+                        title: context.l10n.menuTab,
                         icon: Icons.restaurant_menu,
                         color: AppColors.blueShade100,
                         onTap: () {

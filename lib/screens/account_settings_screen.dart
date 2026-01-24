@@ -86,7 +86,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       final newPassword = _passwordController.text;
 
       if (newPassword.isNotEmpty) {
-        final error = Validators.validatePassword(newPassword);
+        final error = Validators.validatePassword(newPassword, context);
         if (error != null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -107,17 +107,17 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         );
 
         if (mounted) {
-          String message = "Bilgiler güncellendi.";
+          String message = "Bilgiler güncellendi."; // default
           Color color = AppColors.success;
 
           if (emailChanged && passwordChanged) {
-            message = "Şifre güncellendi! E-posta değişikliği için lütfen kutunuza gelen linke tıklayın. 📧";
+            message = context.l10n.emailAndPasswordChanged;
             color = AppColors.pending;
           } else if (emailChanged) {
-            message = "E-posta değişikliği isteği alındı! Lütfen yeni adresinize gelen linke tıklayın. 📧";
+            message = context.l10n.emailChanged;
             color = AppColors.pending;
           } else if (passwordChanged) {
-            message = "Şifreniz başarıyla güncellendi! 🔒";
+            message = context.l10n.passwordChanged;
           }
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -132,7 +132,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Değişiklik yapılmadı.")),
+            SnackBar(content: Text(context.l10n.noChangesMade)),
           );
         }
       }
@@ -140,7 +140,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(ErrorHandler.getMessage(e)),
+            content: Text(ErrorHandler.getMessage(e, context)),
             backgroundColor: AppColors.error,
           ),
         );
@@ -163,7 +163,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text("Hesap Ayarları"),
+        title: Text(context.l10n.accountSettings),
         backgroundColor: context.backgroundColor,
       ),
       body: _isLoading
@@ -190,8 +190,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Hesap Oluşturulma Tarihi",
+                      Text(
+                        context.l10n.accCreationDate,
                         style: TextStyle(
                             fontSize: 13),
                       ),
@@ -206,18 +206,18 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             ),
             const SizedBox(height: 30),
 
-            const Text(
-              "Giriş Bilgileri",
+            Text(
+              context.l10n.loginData,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
             ),
             const SizedBox(height: 16),
 
             TextFormField(
               controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
+              decoration: InputDecoration(
+                labelText: context.l10n.emailLabel,
                 prefixIcon: Icon(Icons.email),
-                helperText: "Değiştirirseniz yeni adresinize doğrulama maili göndereceğiz",
+                helperText: context.l10n.ifEmailChange,
               ),
             ),
             const SizedBox(height: 20),
@@ -225,10 +225,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             TextFormField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Yeni Şifre',
+              decoration: InputDecoration(
+                labelText: context.l10n.newPassword,
                 prefixIcon: Icon(Icons.lock),
-                helperText: "Değiştirmek istemiyorsanız boş bırakabilirsiniz",
+                helperText: context.l10n.ifPasswordChange,
               ),
             ),
             const SizedBox(height: 40),
@@ -242,7 +242,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.white,
                 ),
-                child: const Text("Hesap Bilgilerini Güncelle", style: TextStyle(fontSize: 16)),
+                child: Text(context.l10n.updateAccInfo, style: TextStyle(fontSize: 16)),
               ),
             ),
           ],

@@ -65,7 +65,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
         if (mounted) {
           Navigator.pop(context); // Sayfayı kapat
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Masadan ayrıldınız. 👋"), backgroundColor: AppColors.grey),
+            SnackBar(content: Text(context.l10n.leftTable), backgroundColor: AppColors.grey),
           );
         }
       }
@@ -80,19 +80,19 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Masadan Ayrıl"),
-        content: const Text("Masadan ayrılmak istediğinize emin misiniz?"),
+        title: Text(context.l10n.leaveTable),
+        content: Text(context.l10n.confirmLeaveTable),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("İptal", style: TextStyle(color: AppColors.grey)),
+            child: Text(context.l10n.cancelBtn, style: TextStyle(color: AppColors.grey)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _leaveTable();
             },
-            child: const Text("Evet, Ayrıl", style: TextStyle(color: AppColors.redAccent)),
+            child: Text(context.l10n.yesLeaveTable, style: TextStyle(color: AppColors.redAccent)),
           ),
         ],
       ),
@@ -104,7 +104,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: Text("Masa ${widget.table.tableNumber} Detayı"),
+        title: Text(context.l10n.tableDetailTitle(widget.table.tableNumber)),
         backgroundColor: context.backgroundColor,
         centerTitle: true,
       ),
@@ -129,11 +129,11 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Masa Kuralı",
+                          context.l10n.tableRule,
                           style: TextStyle(color: AppColors.greyShade600, fontSize: 12),
                         ),
                         Text(
-                          widget.table.currentRule ?? "Kural Yok (Serbest)",
+                          widget.table.currentRule ?? context.l10n.noTableRule,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
                         ),
                       ],
@@ -145,10 +145,10 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
             const SizedBox(height: 24),
 
             // --- 2. OTURANLAR ---
-            const Text("Masadakiler", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+            Text(context.l10n.tableParticipants, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const SizedBox(height: 10),
             _participants.isEmpty
-                ? const Text("Kimse görünmüyor.", style: TextStyle(color: AppColors.grey))
+                ? Text(context.l10n.noParticipants, style: TextStyle(color: AppColors.grey))
                 : Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -169,7 +169,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
             const SizedBox(height: 24),
 
             // --- 3. SİPARİŞLER (ADİSYON) ---
-            const Text("Açık Siparişler", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+            Text(context.l10n.openOrders, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const SizedBox(height: 10),
 
             _orders.isEmpty
@@ -181,7 +181,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.greyShade200)
               ),
-              child: const Text("Henüz sipariş yok.", textAlign: TextAlign.center, style: TextStyle(color: AppColors.grey)),
+              child: Text(context.l10n.noOrdersYet, textAlign: TextAlign.center, style: TextStyle(color: AppColors.grey)),
             )
                 : ListView.builder(
               shrinkWrap: true,
@@ -200,7 +200,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
                   child: ListTile(
                     leading: const Icon(Icons.fastfood, color: AppColors.primary),
                     title: Text("$productName (x$quantity)"),
-                    subtitle: Text("Durum: $status"),
+                    subtitle: Text(context.l10n.orderStatus(status)),
                     trailing: Text(
                       "${(price * quantity)} ₺",
                       style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
@@ -219,7 +219,7 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
               child: ElevatedButton.icon(
                 onPressed: _confirmLeave,
                 icon: const Icon(Icons.exit_to_app),
-                label: const Text("Masadan Ayrıl", style: TextStyle(fontSize: 16)),
+                label: Text(context.l10n.leaveTable, style: TextStyle(fontSize: 16)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.redAccent,
                   foregroundColor: AppColors.white,

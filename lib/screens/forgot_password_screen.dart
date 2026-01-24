@@ -32,8 +32,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Sıfırlama bağlantısı gönderildi! Lütfen e-postanızı kontrol edin. 📧"),
+          SnackBar(
+            content: Text(context.l10n.sentLinkMsg),
             backgroundColor: AppColors.success,
             duration: Duration(seconds: 5),
           ),
@@ -44,7 +44,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(ErrorHandler.getMessage(e)),
+              content: Text(ErrorHandler.getMessage(e, context)),
               backgroundColor: AppColors.error
           ),
         );
@@ -65,7 +65,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text("Şifre Sıfırlama"),
+        title: Text(context.l10n.resetPassword),
         backgroundColor: context.backgroundColor,
       ),
       body: Padding(
@@ -77,13 +77,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             children: [
               const Icon(Icons.lock_reset, size: 80, color: AppColors.primary),
               const SizedBox(height: 20),
-              const Text(
-                "Şifrenizi mi Unuttunuz?",
+              Text(
+                context.l10n.forgotPassword,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
               ),
               const SizedBox(height: 10),
-              const Text(
-                "E-posta adresinizi girin, size şifrenizi sıfırlamanız için bir bağlantı gönderelim.",
+              Text(
+                context.l10n.resetLinkMsg,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppColors.grey),
               ),
@@ -93,9 +93,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                validator: (val) => Validators.validateEmail(val, message: "Lütfen geçerli bir e-posta adresi girin"),
+                validator: (val) => Validators.validateEmail(val, context),
                 decoration: InputDecoration(
-                  labelText: 'Email',
+                  labelText: context.l10n.emailLabel,
                   prefixIcon: const Icon(Icons.email, color: AppColors.primary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
@@ -118,7 +118,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: AppColors.white)
-                      : const Text("Bağlantı Gönder", style: TextStyle(fontSize: 18)),
+                      : Text(context.l10n.sendLinkBtn, style: TextStyle(fontSize: 18)),
                 ),
               ),
             ],

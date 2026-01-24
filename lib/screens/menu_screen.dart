@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:language_cafe/utils/context_extensions.dart';
+import '../utils/context_extensions.dart';
 import '../providers/menu_provider.dart';
 import '../constants/app_colors.dart';
 
@@ -12,8 +12,9 @@ class MenuScreen extends ConsumerStatefulWidget {
 }
 
 class _MenuScreenState extends ConsumerState<MenuScreen> {
-  // Seçili kategoriyi tutan değişken (Varsayılan: Hepsi)
-  String _selectedCategory = 'Hepsi';
+  // Seçili kategori (Her zaman veritabanındaki orijinal/Türkçe değer tutulur)
+  // Boş string = Hepsi
+  String _selectedCategoryRaw = '';
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text("Menü"),
+        title: Text(context.l10n.menuLabel),
         backgroundColor: context.backgroundColor,
         centerTitle: true, // Başlığı ortalar
       ),
@@ -35,12 +36,12 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
 
           // --- KATEGORİ MANTIĞI ---
           // 1. Veritabanındaki ürünlerden benzersiz kategorileri çıkar
-          final categories = ['Hepsi', ...allProducts.map((e) => e.category).toSet()];
+          final rawCategories = ['', ...allProducts.map((e) => e.category).toSet()];
 
-          // 2. Seçili kategoriye göre ürünleri filtrele
-          final displayedProducts = _selectedCategory == 'Hepsi'
+          // Filtreleme (Orijinal isme göre yapılır)
+          final displayedProducts = _selectedCategoryRaw.isEmpty
               ? allProducts
-              : allProducts.where((p) => p.category == _selectedCategory).toList();
+              : allProducts.where((p) => p.category == _selectedCategoryRaw).toList();
 
           return Column(
             children: [
@@ -50,16 +51,28 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal, // Yan yana kaydırma
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  itemCount: categories.length,
+                  itemCount: rawCategories.length,
                   itemBuilder: (context, index) {
-                    final category = categories[index];
-                    final isSelected = category == _selectedCategory;
+                    final rawCategory = rawCategories[index];
+                    final isSelected = rawCategory == _selectedCategoryRaw;
+
+                    // GÖRÜNTÜLEME İSMİ (Label)
+                    String displayLabel;
+                    if (rawCategory.isEmpty) {
+                      displayLabel = context.l10n.allCategories; // "Hepsi" veya "All" (.arb dosyasından)
+                    } else {
+                      // Orijinal kategorinin İngilizce karşılığını bulmamız lazım.
+                      // Listeden bu kategoriye sahip ilk ürünü bulup onun çeviri metodunu kullanıyoruz.
+                      // (Biraz hileli ama pratik bir yöntemdir)
+                      final productExample = allProducts.firstWhere((p) => p.category == rawCategory);
+                      displayLabel = productExample.getLocalizedCategory(context);
+                    }
 
                     return Padding(
                       padding: const EdgeInsets.only(right: 10), // Kartlar arası boşluk
                       child: ChoiceChip(
                         label: Text(
-                          category,
+                          displayLabel,
                           style: TextStyle(
                             color: isSelected ? AppColors.white : AppColors.primary,
                             fontWeight: FontWeight.bold,
@@ -76,7 +89,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                           if (selected) {
                             // Tıklanınca kategoriyi güncelle ve ekranı yenile
                             setState(() {
-                              _selectedCategory = category;
+                              _selectedCategoryRaw = rawCategory;
                             });
                           }
                         },
@@ -128,7 +141,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    product.name,
+                                    product.getLocalizedName(context),
                                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                   ),
                                   Text(

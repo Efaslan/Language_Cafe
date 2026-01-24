@@ -41,11 +41,11 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
       ref.invalidate(currentTableProvider);
 
       if (mounted) {
-        String message = "Masa ${table.tableNumber}'e oturdunuz! İyi sohbetler ☕";
+        String message = context.l10n.tableJoinedMsg(table.tableNumber);
         Color color = AppColors.success;
 
         if (table.activeCount >= table.currentChairCount) {
-          message = "Sandalye çekip katıldınız! Harika ortam 🪑";
+          message = context.l10n.pulledAChair;
           color = AppColors.success;
         }
 
@@ -86,13 +86,13 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.info, color: AppColors.primary, size: 28),
                   SizedBox(width: 10),
                   Text(
-                    "Bilgilendirme",
+                    context.l10n.tableChairsInfoSection,
                     style: TextStyle(
                       color: AppColors.primary,
                       fontSize: 20,
@@ -103,8 +103,8 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
               ),
               const SizedBox(height: 16),
 
-              const Text(
-                "Masa dolulukları sadece bilgilendirme amaçlıdır.\n\nOturmak istediğiniz yerler dolu da olsa istediğiniz gibi sandalye çekebilirsiniz :)",
+              Text(
+                context.l10n.infoText,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -127,7 +127,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text("Tamam", style: TextStyle(fontSize: 16)),
+                  child: Text(context.l10n.ok, style: TextStyle(fontSize: 16)),
                 ),
               ),
             ],
@@ -142,7 +142,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text("Masalar"),
+        title: Text(context.l10n.tables),
         backgroundColor: context.backgroundColor,
         actions: [
           IconButton(
@@ -160,10 +160,6 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
           }
 
           final tables = snapshot.data!;
-
-          if (tables.isEmpty) {
-            return const Center(child: Text("Henüz masa eklenmemiş."));
-          }
 
           return GridView.builder(
             padding: const EdgeInsets.all(16),
@@ -199,7 +195,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
                       Icon(Icons.table_restaurant, size: 40, color: AppColors.primary),
                       const SizedBox(height: 8),
                       Text(
-                        "Masa ${table.tableNumber}",
+                        context.l10n.tableName(table.tableNumber),
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -240,7 +236,7 @@ class _TablesScreenState extends ConsumerState<TablesScreen> {
         },
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.qr_code_scanner, color: AppColors.white),
-        label: const Text("QR Okut", style: TextStyle(color: AppColors.white)),
+        label: Text(context.l10n.scanQrBtn, style: TextStyle(color: AppColors.white)),
       ),
     );
   }

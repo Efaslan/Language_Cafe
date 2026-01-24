@@ -41,8 +41,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Kayıt Başarılı! Lütfen email adresinizi doğrulayın. 📧"),
+          SnackBar(
+            content: Text(context.l10n.registerSuccess),
             backgroundColor: AppColors.success,
             duration: Duration(seconds: 6),
           ),
@@ -52,7 +52,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(ErrorHandler.getMessage(e)),
+            content: Text(ErrorHandler.getMessage(e, context)),
             backgroundColor: AppColors.error,
           ),
         );
@@ -76,7 +76,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text("Kayıt Ol"),
+        title: Text(context.l10n.registerBtn),
         backgroundColor: context.backgroundColor,
       ),
       body: Center(
@@ -89,8 +89,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 const Icon(Icons.person_add, size: 80, color: AppColors.primary),
                 const SizedBox(height: 20),
-                const Text(
-                  'Aramıza Katıl',
+                Text(
+                  context.l10n.joinUs,
                   style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
                 ),
                 const SizedBox(height: 30),
@@ -102,9 +102,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: TextFormField(
                         controller: _firstNameController,
                         keyboardType: TextInputType.name,
-                        validator: (val) => Validators.validateName(val, message: 'Size nasıl hitap edelim?'),
+                        validator: (val) => Validators.validateName(val, context, message: context.l10n.nameRequired),
                         decoration: InputDecoration(
-                          labelText: 'Ad*',
+                          labelText: '${context.l10n.firstName}*',
                           prefixIcon: const Icon(Icons.person, color: AppColors.primary),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           focusedBorder: OutlineInputBorder(
@@ -120,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         keyboardType: TextInputType.name,
                         // no validator, last name is optional
                         decoration: InputDecoration(
-                          labelText: 'Soyad',
+                          labelText: context.l10n.lastName,
                           prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                           focusedBorder: OutlineInputBorder(
@@ -138,9 +138,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  validator: (val) => Validators.validateEmail(val, message: 'Size bir mail göndermemiz gerekiyor!'),
+                  validator: (val) => Validators.validateEmail(val, context, message: context.l10n.emailRequired),
                   decoration: InputDecoration(
-                    labelText: 'Email*',
+                    labelText: '${context.l10n.emailLabel}*',
                     prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     focusedBorder: OutlineInputBorder(
@@ -156,9 +156,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  validator: (val) => Validators.validatePassword(val, message: 'Lütfen unutmayın! (En az 6 karakter)'),
+                  validator: (val) => Validators.validatePassword(val, context),
                   decoration: InputDecoration(
-                    labelText: 'Şifre*',
+                    labelText: '${context.l10n.passwordLabel}*',
                     prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     focusedBorder: OutlineInputBorder(
@@ -185,7 +185,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: AppColors.white)
-                        : const Text('Kayıt Ol', style: TextStyle(fontSize: 18)),
+                        : Text(context.l10n.registerBtn, style: TextStyle(fontSize: 18)),
                   ),
                 ),
 
@@ -196,8 +196,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text(
-                      "Zaten hesabın var mı? Giriş Yap",
+                    child: Text(
+                      context.l10n.hasAcc,
                       style: TextStyle(color: AppColors.primary),
                     )
                 ),

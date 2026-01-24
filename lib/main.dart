@@ -1,15 +1,23 @@
-import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
+
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/update_password_screen.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'widgets/floating_cart_button.dart';
 import 'widgets/draggable_table_bubble.dart';
-import 'constants/app_theme.dart'; // Tema dosyasını import et
+import 'constants/app_theme.dart';
+
+import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
-import 'dart:async';
+import 'providers/shared_prefs_provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -17,6 +25,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: ".env");
+  final prefs = await SharedPreferences.getInstance();
 
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
@@ -24,9 +33,12 @@ Future<void> main() async {
   );
 
   runApp(
-    // UYGULAMAYI ProviderScope İLE SARMALA
-    const ProviderScope(
-      child: MyApp(),
+    ProviderScope(
+      // 2. Hazırladığımız hafızayı Provider'a teslim et (Override)
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const MyApp(),
     ),
   );
 }
@@ -38,6 +50,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
 
     final themeMode = ref.watch(themeProvider);
+    final currentLocale = ref.watch(localeProvider);
 
     return MaterialApp(
       navigatorKey: navigatorKey,
@@ -48,6 +61,17 @@ class MyApp extends ConsumerWidget {
 
       // 3. Modu Belirle (Provider ne derse o)
       themeMode: themeMode,
+      locale: currentLocale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate, // Bizim oluşturduğumuz çeviriler
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('tr'), // Türkçe
+        Locale('en'), // İngilizce
+      ],
 
       // global cart button
       builder: (context, child) {

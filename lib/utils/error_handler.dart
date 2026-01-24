@@ -1,35 +1,41 @@
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../utils/context_extensions.dart';
 
 class ErrorHandler {
-  static String getMessage(Object error) {
+  // Static metoda BuildContext ekledik
+  static String getMessage(Object error, BuildContext context) {
+    // Çeviri dosyasına erişim
+    final l10n = context.l10n;
+
     if (error is AuthException) {
       final msg = error.message.toLowerCase();
 
       if (msg.contains("invalid login credentials")) {
-        return "Giriş bilgileri hatalı. Lütfen kontrol edin.";
+        return l10n.errorInvalidLogin;
       }
       if (msg.contains("user not found") || msg.contains("not found")) {
-        return "Bu email ile kayıtlı kullanıcı bulunamadı.";
+        return l10n.errorUserNotFound;
       }
-      if (msg.contains("user with this email")){
-        return "Bu e-posta adresi zaten kullanımda. Lütfen başka bir adres deneyin.";
+      if (msg.contains("user with this email") || msg.contains("already registered")){
+        return l10n.errorUserExists;
       }
       if (msg.contains("password should be")) {
-        return "Şifre yeterince güvenli değil.";
+        return l10n.errorWeakPassword;
       }
       if (msg.contains("email link is invalid")) {
-        return "Linkin süresi dolmuş veya geçersiz.";
+        return l10n.errorInvalidLink;
       }
 
       // unknown auth error
-      return "Giriş hatası: ${error.message}";
+      return l10n.errorAuthDefault(error.message);
     }
 
     if (error is PostgrestException) {
-      return "Veritabanı hatası: ${error.message}";
+      return l10n.errorDbDefault(error.message);
     }
 
     // unknown error
-    return "Beklenmedik bir hata oluştu: $error";
+    return l10n.errorUnknown(error.toString());
   }
 }

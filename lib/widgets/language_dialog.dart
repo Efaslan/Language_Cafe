@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:language_cafe/utils/context_extensions.dart';
 import '../constants/app_colors.dart';
 
 class AddLanguageDialog extends StatefulWidget {
@@ -20,11 +21,11 @@ class _AddLanguageDialogState extends State<AddLanguageDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Dil Ekle", style: TextStyle(color: AppColors.primary)),
+      title: Text(context.l10n.addLang, style: TextStyle(color: AppColors.primary)),
       content: TextField(
         controller: _languageController,
-        decoration: const InputDecoration(
-          hintText: "Örn: İngilizce, Fransızca",
+        decoration: InputDecoration(
+          hintText: context.l10n.egLang,
           focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: AppColors.primary),
           ),
@@ -34,7 +35,7 @@ class _AddLanguageDialogState extends State<AddLanguageDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context), // Geriye null döner
-          child: const Text("İptal", style: TextStyle(color: AppColors.grey)),
+          child: Text(context.l10n.cancelBtn, style: TextStyle(color: AppColors.grey)),
         ),
         ElevatedButton(
           onPressed: () {
@@ -47,7 +48,7 @@ class _AddLanguageDialogState extends State<AddLanguageDialog> {
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.white,
           ),
-          child: const Text("Ekle"),
+          child: Text(context.l10n.addBtn),
         ),
       ],
     );

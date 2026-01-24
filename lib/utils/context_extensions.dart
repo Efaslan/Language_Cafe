@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:language_cafe/l10n/app_localizations.dart';
 import '../constants/app_colors.dart';
 
 extension ThemeContext on BuildContext {
@@ -10,4 +11,7 @@ extension ThemeContext on BuildContext {
 
   /// Temaya uygun ana metin rengi (Karanlıkta Beyaz, Aydınlıkta Kahve)
   Color get appTextColor => isDark ? Colors.white : AppColors.primary;
+
+  /// Kullanım: context.l10n.welcomeTitle
+  AppLocalizations get l10n => AppLocalizations.of(this)!;
 }

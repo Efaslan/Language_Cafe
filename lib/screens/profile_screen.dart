@@ -76,13 +76,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Profil güncellendi! ✅"), backgroundColor: AppColors.success),
+          SnackBar(content: Text(context.l10n.profileUpdated), backgroundColor: AppColors.success),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ErrorHandler.getMessage(e)), backgroundColor: AppColors.error),
+          SnackBar(content: Text(ErrorHandler.getMessage(e, context)), backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -133,7 +133,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text("Profil Düzenle"),
+        title: Text(context.l10n.myProfile),
         backgroundColor: context.backgroundColor,
         iconTheme: IconThemeData(color: context.appTextColor),
       ),
@@ -192,7 +192,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             // ... Inputlar (Aynı kalıyor) ...
 
-            const Text("Kişisel Bilgiler", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+            Text(context.l10n.personalInfo, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const SizedBox(height: 10),
 
             Row(
@@ -200,14 +200,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _firstNameController,
-                    decoration: const InputDecoration(labelText: 'Ad', prefixIcon: Icon(Icons.person)),
+                    decoration: InputDecoration(labelText: context.l10n.firstName, prefixIcon: Icon(Icons.person)),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: TextFormField(
                     controller: _lastNameController,
-                    decoration: const InputDecoration(labelText: 'Soyad', prefixIcon: Icon(Icons.person_outline)),
+                    decoration: InputDecoration(labelText: context.l10n.lastName, prefixIcon: Icon(Icons.person_outline)),
                   ),
                 ),
               ],
@@ -217,8 +217,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             TextFormField(
               controller: _bioController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Hakkımda',
+              decoration: InputDecoration(
+                labelText: context.l10n.aboutMe,
                 prefixIcon: Icon(Icons.description, color: AppColors.primary),
                 alignLabelWithHint: true,
                 border: OutlineInputBorder(),
@@ -232,11 +232,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Öğrenilen Diller", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                Text(context.l10n.learningLanguages, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 IconButton(
                   onPressed: _showAddLanguageDialog,
                   icon: const Icon(Icons.add_circle, color: AppColors.primary),
-                  tooltip: "Dil Ekle",
+                  tooltip: context.l10n.addLang,
                 ),
               ],
             ),
@@ -275,18 +275,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             const SizedBox(height: 24),
 
-            const Text("Gizlilik Ayarları", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+            Text(context.l10n.privacyOptions, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const SizedBox(height: 10),
 
             SwitchListTile(
               title: Text(
-                _isPublic ? "Profilim Herkese Açık" : "Profilim Gizli",
+                _isPublic ? context.l10n.profilePublic : context.l10n.profileHidden,
                 style: TextStyle(
                     color: context.isDark ? Colors.white : Colors.black,
                     fontWeight: FontWeight.normal
                 ),
               ),
-              subtitle: const Text("Kapalıyken diğer kullanıcılar profilinizi göremez."),
+              subtitle: Text(context.l10n.privacySubtitle),
               value: _isPublic,
               activeTrackColor: AppColors.primary,
               onChanged: (bool value) {
@@ -307,7 +307,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.white,
                 ),
-                child: const Text("Değişiklikleri Kaydet", style: TextStyle(fontSize: 16)),
+                child: Text(context.l10n.saveChangesBtn, style: TextStyle(fontSize: 16)),
               ),
             ),
             const SizedBox(height: 80),

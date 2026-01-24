@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'shared_prefs_provider.dart';
 
-// Temayı yöneten Notifier
 class ThemeNotifier extends Notifier<ThemeMode> {
+  // Veritabanı anahtarı
+  static const _themeKey = 'isDarkMode';
+
   @override
   ThemeMode build() {
-    return ThemeMode.light; // Varsayılan Aydınlık
+    // 1. Başlangıçta hafızaya bak
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final isDark = prefs.getBool(_themeKey) ?? false; // Varsayılan: Aydınlık (false)
+
+    return isDark ? ThemeMode.dark : ThemeMode.light;
   }
 
-  // Modu değiştir
   void toggleTheme(bool isDark) {
     state = isDark ? ThemeMode.dark : ThemeMode.light;
+
+    // 2. Değişikliği hafızaya kaydet
+    ref.read(sharedPreferencesProvider).setBool(_themeKey, isDark);
   }
 }
-
-// Global Provider
 final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
