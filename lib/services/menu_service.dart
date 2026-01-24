@@ -33,7 +33,7 @@ class MenuService {
         'product_id': product.id,
         'quantity': quantity,
         'price_at_order': product.price, // O anki fiyatı kilitliyoruz
-        'status': 'Ordered',
+        'status': 'Preparing',
       });
     });
 
@@ -45,10 +45,9 @@ class MenuService {
   Future<List<Map<String, dynamic>>> getTableOrders(int tableId) async {
     final data = await _supabase
         .from('orders')
-        .select('quantity, status, products(name, price)') // İlişkili ürün bilgilerini de çek
+        .select('quantity, status, products(name, name_en, price)') // İlişkili ürün bilgilerini de çek
         .eq('table_id', tableId)
-        .neq('status', 'Paid') // Ödenmişleri gösterme (Aktif siparişler)
-        .neq('status', 'Cancelled')
+        .inFilter('status', ['Preparing', 'Served'])
         .order('created_at', ascending: false);
 
     return List<Map<String, dynamic>>.from(data);

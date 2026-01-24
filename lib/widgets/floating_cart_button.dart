@@ -28,10 +28,6 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
     try {
       Navigator.pop(_navContext!); // Sepeti kapat
 
-      ScaffoldMessenger.of(_navContext!).showSnackBar(
-        SnackBar(content: Text(context.l10n.preparingOrder)),
-      );
-
       await menuService.placeOrder(
         tableId: currentTable.id,
         cartItems: cart,
@@ -68,7 +64,8 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Consumer(
+        return SafeArea(
+            child: Consumer(
             builder: (context, ref, child) {
               final cart = ref.watch(cartProvider);
               final totalPrice = ref.watch(cartTotalProvider);
@@ -121,7 +118,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        product.name,
+                                        product.getLocalizedName(context),
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -226,7 +223,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
                 ),
               );
             }
-        );
+        ));
       },
     ).whenComplete(() async {
       // Sepet KAPANDI: Animasyonun bitmesini bekle ve butonu geri getir
@@ -242,8 +239,8 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
   Widget _buildQrButton(BuildContext context) {
     return Column(
       children: [
-        const Text(
-          "Lütfen sipariş vermeden önce masanızdaki QR kodunu okutun",
+        Text(
+          context.l10n.scanQrMsg,
           textAlign: TextAlign.center,
           style: TextStyle(color: AppColors.redAccent),
         ),
@@ -259,7 +256,7 @@ class _FloatingCartButtonState extends ConsumerState<FloatingCartButton> {
               }
             },
             icon: const Icon(Icons.qr_code_scanner),
-            label: const Text("QR Okut"),
+            label: Text(context.l10n.scanQrBtn),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.grey,
               foregroundColor: AppColors.white,

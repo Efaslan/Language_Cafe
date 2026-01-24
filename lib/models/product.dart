@@ -35,6 +35,30 @@ class Product {
     );
   }
 
+  // YENİ: Objeyi JSON'a çevir (Kaydetmek için)
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'name_en': nameEn,
+      'price': price,
+      'category': category,
+      'category_en': categoryEn,
+      'image_url': imageUrl,
+      'is_available': isAvailable,
+    };
+  }
+
+  // Eşitlik kontrolü (Map içinde anahtar olarak kullanabilmek için şart)
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Product && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
   String getLocalizedName(BuildContext context) {
     // Dil kodunu al (tr, en)
     final languageCode = Localizations.localeOf(context).languageCode;

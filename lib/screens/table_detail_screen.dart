@@ -99,8 +99,26 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
     );
   }
 
+  String _getLocalizedStatus(String dbStatus) {
+    switch (dbStatus) {
+      case 'Preparing':
+        return context.l10n.statusPreparing;
+      case 'Served':
+        return context.l10n.statusServed;
+      case 'Paid':
+        return context.l10n.statusPaid;
+      case 'Cancelled':
+        return context.l10n.statusCancelled;
+      default:
+        return dbStatus; // Bilinmeyen bir durumsa olduğu gibi göster
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
@@ -189,10 +207,15 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
               itemCount: _orders.length,
               itemBuilder: (context, index) {
                 final order = _orders[index];
-                final productName = order['products']['name'];
-                final price = order['products']['price'];
+                final productData = order['products'];
+                String productName = productData['name'];
+                if (isEnglish) {
+                  productName = productData['name_en'];
+                }
+
+                final price = productData['price'];
                 final quantity = order['quantity'];
-                final status = order['status'];
+                final localizedStatus = _getLocalizedStatus(order['status']);
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -200,10 +223,10 @@ class _TableDetailScreenState extends ConsumerState<TableDetailScreen> {
                   child: ListTile(
                     leading: const Icon(Icons.fastfood, color: AppColors.primary),
                     title: Text("$productName (x$quantity)"),
-                    subtitle: Text(context.l10n.orderStatus(status)),
+                    subtitle: Text(context.l10n.orderStatus(localizedStatus)),
                     trailing: Text(
                       "${(price * quantity)} ₺",
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primary),
                     ),
                   ),
                 );
