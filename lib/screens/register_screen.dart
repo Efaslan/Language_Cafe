@@ -47,6 +47,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             duration: Duration(seconds: 6),
           ),
         );
+        // --- İSTEĞİN ÜZERİNE YAPILAN DEĞİŞİKLİK ---
+        // 1. Formu Temizle
+        _firstNameController.clear();
+        _lastNameController.clear();
+        _emailController.clear();
+        _passwordController.clear();
+
+        // 2. Login Ekranına Geri Dön
+        // Kullanıcı maili beklerken Login ekranında beklesin
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {

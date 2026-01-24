@@ -114,26 +114,33 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> {
-
   late final StreamSubscription<AuthState> _authSubscription;
 
   @override
   void initState() {
     super.initState();
-    // Auth olaylarını dinle
+
+    // Supabase olaylarını dinle
     _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
 
-      // EĞER ŞİFRE SIFIRLAMA LİNKİYLE GELDİYSE
+      // 1. Şifre sıfırlama linkiyle gelindiyse
       if (event == AuthChangeEvent.passwordRecovery) {
-        // DÜZELTME: Async gap kontrolü
-        // Widget hala ekranda mı kontrol et
         if (mounted) {
-          Navigator.of(context).push(
+          navigatorKey.currentState?.push(
             MaterialPageRoute(
-                builder: (context) => const UpdatePasswordScreen()),
+              builder: (context) => const UpdatePasswordScreen(),
+            ),
           );
         }
+      }
+
+      // 2. YENİ: Email linkine tıklandı ve giriş yapıldıysa (SIGNED IN)
+      // Bu olay, kullanıcı linke tıkladığında tetiklenir.
+      if (event == AuthChangeEvent.signedIn) {
+        // Navigasyon yığınındaki (Stack) her şeyi temizle ve en başa dön.
+        // Böylece Register ekranı açıksa kapanır, AuthGate devreye girer ve Home açılır.
+        navigatorKey.currentState?.popUntil((route) => route.isFirst);
       }
     });
   }

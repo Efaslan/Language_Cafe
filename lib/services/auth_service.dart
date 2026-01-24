@@ -14,7 +14,7 @@ class AuthService {
     return await _supabase.auth.signUp(
       email: email,
       password: password,
-      emailRedirectTo: 'com.emiraslan.language_cafe://login-callback',
+      emailRedirectTo: 'https://language-cafe.netlify.app',
       data: {
         'first_name': firstName,
         'last_name': lastName,
@@ -35,7 +35,7 @@ class AuthService {
   Future<void> resetPassword(String email) async {
     await _supabase.auth.resetPasswordForEmail(
       email,
-      redirectTo: 'com.emiraslan.language_cafe://login-callback',
+      redirectTo: 'https://language-cafe.netlify.app',
     );
   }
 

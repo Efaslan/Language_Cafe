@@ -59,7 +59,7 @@ class UserService {
     final attributes = UserAttributes(email: email, password: password);
     return await _supabase.auth.updateUser(
       attributes,
-      emailRedirectTo: 'com.emiraslan.language_cafe://login-callback',
+      emailRedirectTo: 'https://language-cafe.netlify.app',
     );
   }
 }

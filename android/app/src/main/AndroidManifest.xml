@@ -18,19 +18,20 @@
                 android:resource="@style/NormalTheme"
                 />
 
-            <!-- 1. FİLTRE: Uygulama İkonuna Tıklayınca Açılması İçin (STANDART) -->
+            <!-- 1. STANDART LAUNCHER -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- 2. FİLTRE: Mail Linkine Tıklayınca Açılması İçin (DEEP LINK) -->
+            <!-- 2. CUSTOM SCHEME DEEP LINK (Sadece bu kalacak) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="com.emiraslan.language_cafe" android:host="login-callback" />
+                <!-- scheme'i .'siz sade isim yapinca browser web page olarak dusunmeyip app'i aciyor -->
+                <data android:scheme="lcafe" android:host="login-callback" />
             </intent-filter>
 
         </activity>
