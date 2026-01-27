@@ -38,7 +38,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             duration: Duration(seconds: 5),
           ),
         );
-        Navigator.pop(context); // return to login
       }
     } catch (e) {
       if (mounted) {
